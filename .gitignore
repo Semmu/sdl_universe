@@ -3,6 +3,9 @@
 # i dont know why is my computer full of these temp files
 .fuse_hidden*
 
+# the binary
+SU
+
 ### C++ ###
 # Compiled Object files
 *.slo
