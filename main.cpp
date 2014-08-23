@@ -2,14 +2,191 @@
 #include <list>
 #include <string>
 #include <sstream>
+#include <cmath>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+double deg2rad(double d)
+{
+	return d / 180 * M_PI;
+}
+
+double rad2deg(double r)
+{
+	return r / M_PI * 180;
+}
+
+bool point(SDL_Surface* dst, int x1, int y1, int color)
+{
+	SDL_Rect r;
+	r.w = r.h = 1;
+	r.x = x1;
+	r.y = y1;
+
+	SDL_FillRect(dst, &r, color);
+
+	return true;
+}
+
+bool point(SDL_Surface* dst, SDL_Point p, int c)
+{
+	return point(dst, p.x, p.y, c);
+}
+
+bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
+{
+	// TODO: lock surface pixels and manually access them
+
+	SDL_Rect rect;
+	rect.h = 1;
+	rect.w = 1;
+
+	if (x1 == x2)
+	{
+		rect.x = x1;
+
+		for (int c = (y1 > y2 ? y2 : y1); c < (y1 > y2 ? y1 : y2) + 1; c++)
+		{
+			rect.y = c;
+			SDL_FillRect(dst, &rect, color);
+		}
+
+		return true;
+	}
+
+	if (y1 == y2)
+	{
+		rect.y = y1;
+
+		for (int c = (x1 > x2 ? x2 : x1); c < (x1 > x2 ? x1 : x2) + 1; c++)
+		{
+			rect.x = c;
+			SDL_FillRect(dst, &rect, color);
+		}
+
+		return true;
+	}
+
+
+	double meredekseg = ( double(y1) - double(y2) ) / (double(x2) - double(x1));
+
+	bool xdir = (meredekseg <= 1 && meredekseg >= -1 ? true : false);
+
+	if (xdir)
+	{
+		if (x1 > x2)
+		{
+			int temp;
+			temp = x2;
+			x2 = x1;
+			x1 = temp;
+
+			temp = y2;
+			y2 = y1;
+			y1 = temp;
+		}
+
+		for (int c = x1 ; c < x2 ; c++)
+		{
+			rect.x = c;
+			rect.y = y1 - meredekseg * (c - x1);
+			SDL_FillRect(dst, &rect, color);
+		}
+
+		return true;
+	}
+	else
+	{
+		if (y1 > y2)
+		{
+			int temp;
+			temp = x2;
+			x2 = x1;
+			x1 = temp;
+
+			temp = y2;
+			y2 = y1;
+			y1 = temp;
+		}
+
+		for (int c = y1 ; c < y2 ; c++)
+		{
+			rect.y = c;
+			rect.x = x1 - 1 / meredekseg * (c - y1);
+			SDL_FillRect(dst, &rect, color);
+		}
+
+		return true;
+	}
+}
 
 class SU
 {
 public:
+	static SU& get()
+	{
+		static SU instance;
+
+		return instance;
+	}
+
+	void something()
+	{
+		std::cout << "thing";
+	}
+
+
+	static int mapColor(int r, int g, int b)
+	{
+		return SDL_MapRGB(get().surface->format, r, g, b);
+	}
+
+private:
+	SU() {}
+
+	SU(const SU& su) {}
+	void operator=(const SU& su) {}
+
+	SDL_Surface* surface;
+
+	int width;
+	int height;
+	int bgColor;
+
+	double clipNear, clipFar;
+	double FOV;
+
+	void instanceInit(SDL_Surface* dst)
+	{
+		width = dst->w;
+		height = dst->h;
+		bgColor = 0;
+		clipFar = 100;
+		clipNear = 0.1;
+		FOV = 60.0;
+
+		surface = dst;
+	}
+
+	void instanceDebug()
+	{
+		std::cout << "w = " << width << std::endl
+				  << "h = " << height << std::endl
+				  << "surface = " << static_cast<void*>(surface) << std::endl;
+	}
+
+public:
+
+	static void init(SDL_Surface* dst)
+	{
+		get().instanceInit(dst);
+	}
+
+	static void debug()
+	{
+		get().instanceDebug();
+	}
 
 	class Vector
 	{
@@ -158,17 +335,22 @@ public:
 	class Primitive
 	{
 	public:
-		enum PrimitiveType
+		static std::list<Primitive*> primitives;
+
+		enum Type
 		{
 			POINT, LINE, TRIANGLE
 		};
 
 		int color;
 
-		Primitive(int c = 0) : color(c) {}
+		Primitive(int c = 0) : color(c)
+		{
+			primitives.push_back(this);
+		}
 
 		virtual Vector getCenter() = 0;
-		virtual PrimitiveType getType() = 0;
+		virtual Type getType() = 0;
 	};
 
 	class Point : public Primitive
@@ -177,7 +359,7 @@ public:
 		Vector p1;
 
 		Vector getCenter() { return p1; }
-		PrimitiveType getType() { return POINT; }
+		Type getType() { return POINT; }
 
 		Point(Vector P1 = Vector(0, 0, 0), int c = 0) : Primitive(c), p1(P1) {}
 	};
@@ -188,7 +370,7 @@ public:
 		Vector p1, p2;
 
 		Vector getCenter() { return (p1 + p2) / 2; }
-		PrimitiveType getType() { return LINE; }
+		Type getType() { return LINE; }
 
 		Line(Vector P1 = Vector(0, 0, 0), Vector P2 = Vector(1, 1, 1), int c = 0) : Primitive(c), p1(P1), p2(P2) {}
 	};
@@ -199,7 +381,7 @@ public:
 		Vector p1, p2, p3;
 
 		Vector getCenter() { return (p1 + p2 + p3) / 3; }
-		PrimitiveType getType() { return TRIANGLE; }
+		Type getType() { return TRIANGLE; }
 
 		Triangle(Vector v1 = Vector(0, 0, 0), Vector v2 = Vector(1, 0, 1), Vector v3 = Vector(0, 1, 0), int c = 0) :
 			Primitive(c), p1(v1), p2(v2), p3(v3) {}
@@ -229,6 +411,78 @@ public:
 		Model* model;
 		Transformation* transformation;
 	};
+
+
+private:
+	SDL_Point instancePositionOnScreen(const Vector& v)
+	{
+		SDL_Point p;
+
+		double left = clipNear / sin(deg2rad(FOV / 2)) * sin(deg2rad(90 - FOV / 2));
+		double up = left / width * height;
+
+		Vector leftVector(-left, 0, 0);
+		Vector rightVector(left, 0, 0);
+		Vector upVector(0, up, 0);
+		Vector downVector(0, -up, 0);
+
+		Vector vectorToPointOnScreen;
+
+		vectorToPointOnScreen.x = v.x * clipNear / v.z;
+		vectorToPointOnScreen.y = v.y * clipNear / v.z;
+
+		Vector vectorToPointFromCorner = vectorToPointOnScreen + rightVector + downVector;
+
+		p.x = vectorToPointFromCorner.x / (2 * left) * width;
+		p.y = - vectorToPointFromCorner.y / (2 * up) * height;
+
+		return p;
+
+		/*
+			xk = +d * x/(z + d) + screen->w/2;
+			yk = -d * y/(z + d) + screen->h/2;
+
+			https://infoc.eet.bme.hu/advent.php?v=18
+		 */
+	}
+
+	void instanceRender()
+	{
+		SDL_FillRect(surface, NULL, bgColor);
+
+		for (Primitive* p : Primitive::primitives)
+		{
+			switch (p->getType())
+			{
+				case SU::Primitive::Type::POINT:
+				{
+					Point* pt = static_cast<Point*>(p);
+					Vector v = pt->p1;
+					SDL_Point sp = SU::instancePositionOnScreen(v);
+					point(surface, sp, pt->color);
+				}
+				break;
+
+				case SU::Primitive::Type::LINE:
+				break;
+
+				default: break;
+			}
+		}
+	}
+
+public:
+	static void render()
+	{
+		get().instanceRender();
+	}
+
+	static SDL_Point positionOnScreen(const Vector& v)
+	{
+		return get().instancePositionOnScreen(v);
+	}
+
+
 };
 
 SU::Vector operator*(const double d, const SU::Vector v)
@@ -236,6 +490,7 @@ SU::Vector operator*(const double d, const SU::Vector v)
 	return SU::Vector(v.x*d, v.y*d, v.z*d);
 }
 
+std::list<SU::Primitive*> SU::Primitive::primitives;
 
 
 
@@ -262,104 +517,6 @@ void DIE()
 	DIE(SDL_GetError());
 }
 
-bool point(SDL_Surface* dst, int x1, int y1, int color)
-{
-	SDL_Rect r;
-	r.w = r.h = 1;
-	r.x = x1;
-	r.y = y1;
-
-	SDL_FillRect(dst, &r, color);
-
-	return true;
-}
-
-bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
-{
-	// TODO: lock surface pixels and manually access them
-
-	SDL_Rect rect;
-	rect.h = 1;
-	rect.w = 1;
-
-	if (x1 == x2)
-	{
-		rect.x = x1;
-
-		for (int c = (y1 > y2 ? y2 : y1); c < (y1 > y2 ? y1 : y2) + 1; c++)
-		{
-			rect.y = c;
-			SDL_FillRect(dst, &rect, color);
-		}
-
-		return true;
-	}
-
-	if (y1 == y2)
-	{
-		rect.y = y1;
-
-		for (int c = (x1 > x2 ? x2 : x1); c < (x1 > x2 ? x1 : x2) + 1; c++)
-		{
-			rect.x = c;
-			SDL_FillRect(dst, &rect, color);
-		}
-
-		return true;
-	}
-
-
-	double meredekseg = ( double(y1) - double(y2) ) / (double(x2) - double(x1));
-
-	bool xdir = (meredekseg <= 1 && meredekseg >= -1 ? true : false);
-
-	if (xdir)
-	{
-		if (x1 > x2)
-		{
-			int temp;
-			temp = x2;
-			x2 = x1;
-			x1 = temp;
-
-			temp = y2;
-			y2 = y1;
-			y1 = temp;
-		}
-
-		for (int c = x1 ; c < x2 ; c++)
-		{
-			rect.x = c;
-			rect.y = y1 - meredekseg * (c - x1);
-			SDL_FillRect(dst, &rect, color);
-		}
-
-		return true;
-	}
-	else
-	{
-		if (y1 > y2)
-		{
-			int temp;
-			temp = x2;
-			x2 = x1;
-			x1 = temp;
-
-			temp = y2;
-			y2 = y1;
-			y1 = temp;
-		}
-
-		for (int c = y1 ; c < y2 ; c++)
-		{
-			rect.y = c;
-			rect.x = x1 - 1 / meredekseg * (c - y1);
-			SDL_FillRect(dst, &rect, color);
-		}
-
-		return true;
-	}
-}
 
 
 int main( int argc, char* args[] )
@@ -393,6 +550,23 @@ int main( int argc, char* args[] )
 
 	SDL_Surface *png = IMG_Load("tetris_pe.png");
 
+	std::cout << SU::Primitive::primitives.size() << std::endl;
+
+	SU::init(surface);
+
+	SU::Point p1(SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255));
+	SU::Point p2(SU::Vector(0, 1, 1), SU::mapColor(0, 255, 255));
+	SU::Point p3(SU::Vector(0, 0, 0), SU::mapColor(64, 64, 64));
+	SU::Point p4(SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0));
+
+	SU::Point p5(SU::Vector(1, 0, 1), SU::mapColor(255, 0, 255));
+	SU::Point p6(SU::Vector(1, 1, 1), SU::mapColor(255, 255, 255));
+	SU::Point p7(SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0));
+	SU::Point p8(SU::Vector(1, 1, 0), SU::mapColor(255, 255, 0));
+
+	std::cout << SU::Primitive::primitives.size() << std::endl;
+
+
 	while (running)
 	{
 		SDL_Event e;
@@ -417,6 +591,84 @@ int main( int argc, char* args[] )
 							SDL_Delay(1000);
 						break;
 
+						case SDLK_LEFT:
+						{
+							p1.p1.x -= 0.1;
+							p2.p1.x -= 0.1;
+							p3.p1.x -= 0.1;
+							p4.p1.x -= 0.1;
+							p5.p1.x -= 0.1;
+							p6.p1.x -= 0.1;
+							p7.p1.x -= 0.1;
+							p8.p1.x -= 0.1;
+						}
+						break;
+
+						case SDLK_RIGHT:
+						{
+							p1.p1.x += 0.1;
+							p2.p1.x += 0.1;
+							p3.p1.x += 0.1;
+							p4.p1.x += 0.1;
+							p5.p1.x += 0.1;
+							p6.p1.x += 0.1;
+							p7.p1.x += 0.1;
+							p8.p1.x += 0.1;
+						}
+						break;
+
+						case SDLK_DOWN:
+						{
+							p1.p1.y -= 0.1;
+							p2.p1.y -= 0.1;
+							p3.p1.y -= 0.1;
+							p4.p1.y -= 0.1;
+							p5.p1.y -= 0.1;
+							p6.p1.y -= 0.1;
+							p7.p1.y -= 0.1;
+							p8.p1.y -= 0.1;
+						}
+						break;
+
+						case SDLK_UP:
+						{
+							p1.p1.y += 0.1;
+							p2.p1.y += 0.1;
+							p3.p1.y += 0.1;
+							p4.p1.y += 0.1;
+							p5.p1.y += 0.1;
+							p6.p1.y += 0.1;
+							p7.p1.y += 0.1;
+							p8.p1.y += 0.1;
+						}
+						break;
+
+						case SDLK_s:
+						{
+							p1.p1.z -= 0.1;
+							p2.p1.z -= 0.1;
+							p3.p1.z -= 0.1;
+							p4.p1.z -= 0.1;
+							p5.p1.z -= 0.1;
+							p6.p1.z -= 0.1;
+							p7.p1.z -= 0.1;
+							p8.p1.z -= 0.1;
+						}
+						break;
+
+						case SDLK_w:
+						{
+							p1.p1.z += 0.1;
+							p2.p1.z += 0.1;
+							p3.p1.z += 0.1;
+							p4.p1.z += 0.1;
+							p5.p1.z += 0.1;
+							p6.p1.z += 0.1;
+							p7.p1.z += 0.1;
+							p8.p1.z += 0.1;
+						}
+						break;
+
 						default: break;
 					}
 
@@ -425,11 +677,11 @@ int main( int argc, char* args[] )
 				default: break;
 			}
 		}
-/*
+
 
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
-		for (int j = 0; j < db; j++)
+/*		for (int j = 0; j < db; j++)
 		{
 			line(surface, rand() % WIDTH, rand() % HEIGHT, rand() % WIDTH, rand() % HEIGHT, 0xffffffff);
 			SDL_Rect r;
@@ -437,6 +689,8 @@ int main( int argc, char* args[] )
 			r.y = rand() % HEIGHT;
 			SDL_BlitSurface(png, NULL, surface, &r);
 		}*/
+
+		SU::render();
 
 		count++;
 

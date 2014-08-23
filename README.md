@@ -20,7 +20,8 @@ Planned features
 * SU::Transformation to transform SU::Models (rotate, scale, mirror, translate, everything)
 * SU::Object tree container to group and easily manipulate SU::Models (transform a group of them at once, etc.)
 * Fast average distance-based shorting, optional Z-buffer
-* Very basic lighting system
+* Very basic lighting system (ambiance, directional and point light sources)
+* "Collision" detectiton, line and triangle cutting appropriately
 * ...
 
 
@@ -30,13 +31,16 @@ Planned features
 
 * Texturing
 * Multiple backends (immediate OpenGL for example)
+* A dynamic Level of Detail system
+* Alpha channel for colors (for example half-opaque triangle)
+* Higher level bodies (sphere, cylinder, cone, etc.) and runtime tessellation
 * ...
 
 
 
 What is done
 ------------
-* Since I just started this, almost nothing. But keep an eye on this project, I will likely progress fast (I'll have to finish it in time because I will present it)
+* Since I just started this, almost nothing. But keep an eye on this project, I will likely progress fast (I'll have to finish it in time because I will do a presentation about it)
 
 
 
