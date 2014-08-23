@@ -1,9 +1,10 @@
-#include <SDL2/SDL.h>
-#include <string>
 #include <iostream>
+#include <list>
 #include <string>
 #include <sstream>
-#include <list>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 
 class SU
@@ -363,9 +364,10 @@ bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 
 int main( int argc, char* args[] )
 {
-	int count = 0, db = 200;
+	int count = 0, db = 50;
 
 	SDL_Init(SDL_INIT_VIDEO);
+	IMG_Init(IMG_INIT_PNG);
 	atexit(SDL_Quit);
 
 
@@ -389,6 +391,8 @@ int main( int argc, char* args[] )
                                         0x000000FF,
                                         0xFF000000);
 
+	SDL_Surface *png = IMG_Load("tetris_pe.png");
+
 	while (running)
 	{
 		SDL_Event e;
@@ -409,6 +413,10 @@ int main( int argc, char* args[] )
 							running = false;
 						break;
 
+						case SDLK_SPACE:
+							SDL_Delay(1000);
+						break;
+
 						default: break;
 					}
 
@@ -425,6 +433,11 @@ int main( int argc, char* args[] )
 			line(surface, rand() % WIDTH, rand() % HEIGHT, rand() % WIDTH, rand() % HEIGHT, 0xffffffff);
 
 		count++;
+
+		SDL_Rect r;
+		r.x = rand() % WIDTH;
+		r.y = rand() % HEIGHT;
+		SDL_BlitSurface(png, NULL, surface, &r);
 
 
 		// TODO:

@@ -8,7 +8,7 @@ CC = g++
 COMPILER_FLAGS = -Wall -std=c++11
 
 # what to link
-LINKER_FLAGS = -lSDL2
+LINKER_FLAGS = -lSDL2 -lSDL2_image
 
 # output name
 OBJ_NAME = SU
