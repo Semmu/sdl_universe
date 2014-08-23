@@ -46,6 +46,8 @@ Notes
 * The way to display an SDL_Surface with SDL2 is a bit complicated. You need an SDL_Window, an SDL_Renderer for that window, an SDL_Texture to render, and finally an SDL_Surface to create the texture from.
 	It seems that the process of this takes up 9ms on my machine, no matter if I draw 1 single line on a surface or a hundred. I should find a faster way to display a single SDL_Surface in the window.
 
+	* Probably SDL_UpdateTexture() is what slows down the process, from 3ms to 10ms latency.
+
 
 Licence
 -------

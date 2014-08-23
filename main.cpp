@@ -425,19 +425,21 @@ int main( int argc, char* args[] )
 				default: break;
 			}
 		}
-
+/*
 
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
 		for (int j = 0; j < db; j++)
+		{
 			line(surface, rand() % WIDTH, rand() % HEIGHT, rand() % WIDTH, rand() % HEIGHT, 0xffffffff);
+			SDL_Rect r;
+			r.x = rand() % WIDTH;
+			r.y = rand() % HEIGHT;
+			SDL_BlitSurface(png, NULL, surface, &r);
+		}*/
 
 		count++;
 
-		SDL_Rect r;
-		r.x = rand() % WIDTH;
-		r.y = rand() % HEIGHT;
-		SDL_BlitSurface(png, NULL, surface, &r);
 
 
 		// TODO:
