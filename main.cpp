@@ -121,6 +121,11 @@ bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 	}
 }
 
+bool line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
+{
+	return line(dst, p1.x, p1.y, p2.x, p2.y, c);
+}
+
 class SU
 {
 public:
@@ -446,27 +451,62 @@ private:
 		 */
 	}
 
+	bool instanceIsVectorOnScreen(const Vector& v)
+	{
+		return (v.z > 0);
+	}
+
+	bool instanceIsPrimitiveOnScreen(Primitive* p)
+	{
+		switch(p->getType())
+		{
+			case SU::Primitive::Type::POINT:
+			{
+				Point* pt = static_cast<Point*>(p);
+				return instanceIsVectorOnScreen(pt->p1);
+			}
+			break;
+
+			case SU::Primitive::Type::LINE:
+			{
+				Line* l = static_cast<Line*>(p);
+				return (instanceIsVectorOnScreen(l->p1) && instanceIsVectorOnScreen(l->p2));
+			}
+
+			default: break;
+		}
+	}
+
 	void instanceRender()
 	{
 		SDL_FillRect(surface, NULL, bgColor);
 
 		for (Primitive* p : Primitive::primitives)
 		{
-			switch (p->getType())
+			if (instanceIsPrimitiveOnScreen(p))
 			{
-				case SU::Primitive::Type::POINT:
+				switch (p->getType())
 				{
-					Point* pt = static_cast<Point*>(p);
-					Vector v = pt->p1;
-					SDL_Point sp = SU::instancePositionOnScreen(v);
-					point(surface, sp, pt->color);
+					case SU::Primitive::Type::POINT:
+					{
+						Point* pt = static_cast<Point*>(p);
+						Vector v = pt->p1;
+						SDL_Point sp = SU::instancePositionOnScreen(v);
+						point(surface, sp, pt->color);
+					}
+					break;
+
+					case SU::Primitive::Type::LINE:
+					{
+						Line* l = static_cast<Line*>(p);
+						SDL_Point p1 = SU::instancePositionOnScreen(l->p1);
+						SDL_Point p2 = SU::instancePositionOnScreen(l->p2);
+						line(surface, p1, p2, p->color);
+					}
+					break;
+
+					default: break;
 				}
-				break;
-
-				case SU::Primitive::Type::LINE:
-				break;
-
-				default: break;
 			}
 		}
 	}
@@ -564,6 +604,10 @@ int main( int argc, char* args[] )
 	SU::Point p7(SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0));
 	SU::Point p8(SU::Vector(1, 1, 0), SU::mapColor(255, 255, 0));
 
+	SU::Line l1(SU::Vector(0, 0, 0), SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0));
+	SU::Line l2(SU::Vector(0, 0, 0), SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0));
+	SU::Line l3(SU::Vector(0, 0, 0), SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255));
+
 	std::cout << SU::Primitive::primitives.size() << std::endl;
 
 
@@ -601,6 +645,13 @@ int main( int argc, char* args[] )
 							p6.p1.x -= 0.1;
 							p7.p1.x -= 0.1;
 							p8.p1.x -= 0.1;
+
+							l1.p1.x -= 0.1;
+							l1.p2.x -= 0.1;
+							l2.p1.x -= 0.1;
+							l2.p2.x -= 0.1;
+							l3.p1.x -= 0.1;
+							l3.p2.x -= 0.1;
 						}
 						break;
 
@@ -614,6 +665,13 @@ int main( int argc, char* args[] )
 							p6.p1.x += 0.1;
 							p7.p1.x += 0.1;
 							p8.p1.x += 0.1;
+
+							l1.p1.x += 0.1;
+							l1.p2.x += 0.1;
+							l2.p1.x += 0.1;
+							l2.p2.x += 0.1;
+							l3.p1.x += 0.1;
+							l3.p2.x += 0.1;
 						}
 						break;
 
@@ -627,6 +685,13 @@ int main( int argc, char* args[] )
 							p6.p1.y -= 0.1;
 							p7.p1.y -= 0.1;
 							p8.p1.y -= 0.1;
+
+							l1.p1.y -= 0.1;
+							l1.p2.y -= 0.1;
+							l2.p1.y -= 0.1;
+							l2.p2.y -= 0.1;
+							l3.p1.y -= 0.1;
+							l3.p2.y -= 0.1;
 						}
 						break;
 
@@ -640,6 +705,13 @@ int main( int argc, char* args[] )
 							p6.p1.y += 0.1;
 							p7.p1.y += 0.1;
 							p8.p1.y += 0.1;
+
+							l1.p1.y += 0.1;
+							l1.p2.y += 0.1;
+							l2.p1.y += 0.1;
+							l2.p2.y += 0.1;
+							l3.p1.y += 0.1;
+							l3.p2.y += 0.1;
 						}
 						break;
 
@@ -653,6 +725,13 @@ int main( int argc, char* args[] )
 							p6.p1.z -= 0.1;
 							p7.p1.z -= 0.1;
 							p8.p1.z -= 0.1;
+
+							l1.p1.z -= 0.1;
+							l1.p2.z -= 0.1;
+							l2.p1.z -= 0.1;
+							l2.p2.z -= 0.1;
+							l3.p1.z -= 0.1;
+							l3.p2.z -= 0.1;
 						}
 						break;
 
@@ -666,6 +745,13 @@ int main( int argc, char* args[] )
 							p6.p1.z += 0.1;
 							p7.p1.z += 0.1;
 							p8.p1.z += 0.1;
+
+							l1.p1.z += 0.1;
+							l1.p2.z += 0.1;
+							l2.p1.z += 0.1;
+							l2.p2.z += 0.1;
+							l3.p1.z += 0.1;
+							l3.p2.z += 0.1;
 						}
 						break;
 
