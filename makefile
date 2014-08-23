@@ -5,7 +5,7 @@ OBJS = main.cpp
 CC = g++
 
 # compile flags
-COMPILER_FLAGS = -Wall
+COMPILER_FLAGS = -Wall -std=c++11
 
 # what to link
 LINKER_FLAGS = -lSDL2
