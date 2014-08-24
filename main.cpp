@@ -29,6 +29,36 @@ void DIE()
 }
 
 
+SU::Model cube;
+
+class Floating
+{
+public:
+	static std::list<Floating*> all;
+
+	SU::Object obj;
+
+	SU::Vector direction, destination;
+
+
+	Floating()
+	{
+		direction = SU::Vector(randDouble(), randDouble(), randDouble()).getNormalized();
+		destination = SU::Vector(randDouble(50.0) - 25.0, randDouble(10.0) - 5.0, randDouble(25) + 1);
+		obj.position = SU::Vector(randDouble(50.0) - 25.0, randDouble(10.0) - 5.0, randDouble(25) + 1);
+
+		obj.model = &cube;
+
+		obj.transforming = true;
+		obj.X = SU::Vector(1, randDouble(1) - 0.5, randDouble(1) - 0.5).getNormalized();
+		obj.Y = SU::Vector(randDouble(1) - 0.5, 1, randDouble(1) - 0.5).getNormalized();
+		obj.Z = SU::Vector(randDouble(1) - 0.5, randDouble(1) - 0.5, 1).getNormalized();
+
+		all.push_back(this);
+	}
+};
+std::list<Floating*> Floating::all;
+
 
 int main( int argc, char* args[] )
 {
@@ -60,7 +90,7 @@ int main( int argc, char* args[] )
 										0x000000FF,
 										0xFF000000);
 
-	SU::init(surface);
+	SU::init(surface, SU::Flags::DEBUG_TRANSFORMATIONS);
 
 
 	TTF_Font *font = TTF_OpenFont("./Deltoid-sans.ttf", 32);
@@ -71,7 +101,6 @@ int main( int argc, char* args[] )
 
 
 
-	SU::Model cube;
 
 	cube.add(new SU::Line(0.5, 0, 0.5,		0.5, 0.5, 0));
 	cube.add(new SU::Line(0.5, 0, 0.5,		0, 0.5, 0.5));
@@ -94,8 +123,12 @@ int main( int argc, char* args[] )
 
 	aobject.position = SU::Vector(1, -0.5, 1);
 
-	aobject.transforming = true;
 
+
+	for (int i = 0; i < 30; i++)
+	{
+		new Floating();
+	}
 
 
 
@@ -126,11 +159,21 @@ int main( int argc, char* args[] )
 					switch(e.key.keysym.sym)
 					{
 						case SDLK_ESCAPE:
+						{
 							running = false;
+						}
 						break;
 
 						case SDLK_SPACE:
+						{
 							aobject.enabled = !aobject.enabled;
+						}
+						break;
+
+						case SDLK_d:
+						{
+							SU::unsetFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
+						}
 						break;
 
 						case SDLK_LEFT:
@@ -182,6 +225,16 @@ int main( int argc, char* args[] )
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
 
+		for (Floating* f : Floating::all)
+		{
+			f->direction = (f->direction + (f->destination - f->obj.position).getNormalized()).getNormalized() * 3;
+
+			f->obj.position += f->direction * 0.01;
+
+			if ((f->destination - f->obj.position).getLength() < 1)
+				f->destination = SU::Vector(randDouble(10.0) - 5.0, randDouble(10.0) - 5.0, randDouble(25) + 1);
+		}
+
 		SU::render();
 
 		SDL_Color c = {128, 128, 128};
@@ -208,7 +261,7 @@ int main( int argc, char* args[] )
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 
-
+//		SDL_Delay(10);
 	}
 
 	std::cout << SDL_GetTicks() << " ms / " << count << " frames = " << int(double(SDL_GetTicks()) / count) << " ms average per frame" <<std::endl;

@@ -5,6 +5,8 @@
 #define WHITE 0xffffffff
 
 
+double randDouble(double max = 1.0);
+
 double deg2rad(double d);
 double rad2deg(double r);
 
