@@ -453,7 +453,8 @@ private:
 
 	bool instanceIsVectorOnScreen(const Vector& v)
 	{
-		return (v.z > 0);
+		// FIXME: if we compare to 0, the program will freeze in certain situations, where something is too close to the projection plane
+		return (v.z > 0.01);
 	}
 
 	bool instanceIsPrimitiveOnScreen(Primitive* p)
@@ -483,6 +484,7 @@ private:
 
 		for (Primitive* p : Primitive::primitives)
 		{
+			if (true)
 			if (instanceIsPrimitiveOnScreen(p))
 			{
 				switch (p->getType())
@@ -792,7 +794,7 @@ int main( int argc, char* args[] )
 
 	}
 
-	std::cout << SDL_GetTicks() << " / " << count << " = " << double(SDL_GetTicks()) / count << std::endl;
+	std::cout << SDL_GetTicks() << " ms / " << count << " frames = " << int(double(SDL_GetTicks()) / count) << " ms average per frame" <<std::endl;
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();

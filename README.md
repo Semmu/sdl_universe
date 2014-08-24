@@ -44,7 +44,7 @@ What is done
 
 
 
-Notes
+Notes and known bugs
 -----
 
 * The way to display an SDL_Surface with SDL2 is a bit complicated. You need an SDL_Window, an SDL_Renderer for that window, an SDL_Texture to render, and finally an SDL_Surface to create the texture from.
@@ -52,6 +52,7 @@ Notes
 
 	* Probably SDL_UpdateTexture() is what slows down the process, from 3ms to 10ms latency.
 
+* When something is too close to the projection plane (which is a plane of z=0), the program will freeze when that thing tries to go behind it. Temporary workaround in instanceIsVectorOnScreen(), because it compares to 0.01 not 0.
 
 Licence
 -------
