@@ -119,6 +119,7 @@ namespace SU
 	int bgColor = 0;
 	double clipNear = 1.0, clipFar = 100.0;
 	int FOV = 60;
+	int flags;
 
 
 
@@ -254,9 +255,17 @@ namespace SU
 
 
 
+	Vector getTransformed(Vector v, Vector x, Vector y, Vector z)
+	{
+		return Vector(v.x * x.x + v.y * y.x + v.z * z.x,
+					  v.x * x.y + v.y * y.y + v.z * z.y,
+					  v.x * x.z + v.y * y.z + v.z * z.z);
+	}
+
 
 
 	Primitive::Primitive(int c) : color(c) {}
+	Primitive::~Primitive() {}
 
 
 
@@ -276,6 +285,8 @@ namespace SU
 	{
 		return P1;
 	}
+
+	Point::~Point() {}
 
 
 
@@ -297,6 +308,8 @@ namespace SU
 	{
 		return (P1 + P2) / 2;
 	}
+
+	Line::~Line() {}
 
 
 
@@ -321,6 +334,8 @@ namespace SU
 		return (P1 + P2 + P3) / 3;
 	}
 
+	Triangle::~Triangle() {}
+
 
 	void Model::add(Primitive* p)
 	{
@@ -331,21 +346,33 @@ namespace SU
 	// Object::objects is static
 	std::list<Object*> Object::objects;
 
-	Object::Object()
+	Object::Object() : enabled(true), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1))
 	{
 		objects.push_back(this);
 	}
 
 
 
-	bool init(SDL_Surface* s)
+	bool init(SDL_Surface* s, int f)
 	{
 		surface = s;
 		width = s->w;
 		height = s->h;
 
+		flags = f;
+
 		// it may come handy
 		return true;
+	}
+
+	void setFlag(int f)
+	{
+		flags |= f;
+	}
+
+	void unsetFlag(int f)
+	{
+		flags ^= f;
 	}
 
 	int mapColor(int r, int g, int b)
@@ -358,7 +385,7 @@ namespace SU
 	bool isOnScreen(const Vector& v)
 	{
 		// FIXME: if we compare to 0, the program will freeze in certain situations, where something is too close to the projection plane
-		return (v.z > 0.01);
+		return (v.z > 0.0001);
 	}
 
 	bool isOnScreen(const Primitive* p)
@@ -417,30 +444,65 @@ namespace SU
 
 		for (Object* o : Object::objects)
 		{
-			for (Primitive* p : o->model->contents)
+			if (o->enabled)
 			{
-				switch(p->getType())
+				if (flags & Flags::DEBUG_TRANSFORMATIONS)
 				{
-					case SU::Primitive::Type::POINT:
-					{
-						primitives.push_back(new SU::Point(static_cast<SU::Point*>(p)->P1 + o->position, p->color));
-					}
-					break;
+					primitives.push_back(new SU::Line(o->position, o->X + o->position, SU::mapColor(255, 0, 0)));
+					primitives.push_back(new SU::Line(o->position, o->Y + o->position, SU::mapColor(0, 255, 0)));
+					primitives.push_back(new SU::Line(o->position, o->Z + o->position, SU::mapColor(0, 0, 255)));
+				}
 
-					case SU::Primitive::Type::LINE:
+				for (Primitive* p : o->model->contents)
+				{
+					switch(p->getType())
 					{
-						primitives.push_back(new SU::Line(static_cast<SU::Line*>(p)->P1 + o->position, static_cast<SU::Line*>(p)->P2 + o->position, p->color));
-					}
-					break;
+						case SU::Primitive::Type::POINT:
+						{
+							SU::Point *pt;
 
-					default: break;
+							if (o->transforming)
+							{
+								pt = new SU::Point(getTransformed(static_cast<SU::Point*>(p)->P1, o->X, o->Y, o->Z) + o->position, p->color);
+							}
+							else
+							{
+								pt = new SU::Point(static_cast<SU::Point*>(p)->P1);
+							}
+
+							primitives.push_back(pt);
+						}
+						break;
+
+						case SU::Primitive::Type::LINE:
+						{
+							SU::Line *l;
+
+							if (o->transforming)
+							{
+								l = new SU::Line(getTransformed(static_cast<SU::Line*>(p)->P1, o->X, o->Y, o->Z) + o->position,
+												 getTransformed(static_cast<SU::Line*>(p)->P2, o->X, o->Y, o->Z) + o->position,
+												 p->color);
+							}
+							else
+							{
+								l = new SU::Line(static_cast<SU::Line*>(p)->P1 + o->position,
+												 static_cast<SU::Line*>(p)->P2 + o->position,
+												 p->color);
+							}
+
+							primitives.push_back(l);
+						}
+						break;
+
+						default: break;
+					}
 				}
 			}
 		}
 
 		for (Primitive* p : primitives)
 		{
-			if (true)
 			if (isOnScreen(p))
 			{
 				switch (p->getType())
@@ -467,5 +529,8 @@ namespace SU
 				}
 			}
 		}
+
+		for(Primitive* p : primitives)
+			delete p;
 	}
 }

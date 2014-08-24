@@ -5,7 +5,6 @@
 #include <cmath>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
 #include "SU.h"
@@ -33,10 +32,9 @@ void DIE()
 
 int main( int argc, char* args[] )
 {
-	int count = 0, db = 50;
+	int count = 0;
 
 	SDL_Init(SDL_INIT_VIDEO);
-	IMG_Init(IMG_INIT_PNG);
 	if(TTF_Init() == -1)
 		DIE(TTF_GetError());
 	atexit(SDL_Quit);
@@ -62,8 +60,6 @@ int main( int argc, char* args[] )
 										0x000000FF,
 										0xFF000000);
 
-	SDL_Surface *png = IMG_Load("tetris_pe.png");
-
 	SU::init(surface);
 
 
@@ -75,26 +71,30 @@ int main( int argc, char* args[] )
 
 
 
-	SU::Model amodel;
-	amodel.add(new SU::Point(SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255)));
-	amodel.add(new SU::Point(SU::Vector(0, 1, 1), SU::mapColor(0, 255, 255)));
-	amodel.add(new SU::Point(SU::Vector(0, 0, 0), SU::mapColor(64, 64, 64)));
-	amodel.add(new SU::Point(SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0)));
+	SU::Model cube;
 
-	amodel.add(new SU::Point(SU::Vector(1, 0, 1), SU::mapColor(255, 0, 255)));
-	amodel.add(new SU::Point(SU::Vector(1, 1, 1), SU::mapColor(255, 255, 255)));
-	amodel.add(new SU::Point(SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0)));
-	amodel.add(new SU::Point(SU::Vector(1, 1, 0), SU::mapColor(255, 255, 0)));
+	cube.add(new SU::Line(0.5, 0, 0.5,		0.5, 0.5, 0));
+	cube.add(new SU::Line(0.5, 0, 0.5,		0, 0.5, 0.5));
+	cube.add(new SU::Line(0.5, 0, 0.5,		0.5, 0.5, 1));
+	cube.add(new SU::Line(0.5, 0, 0.5,		1, 0.5, 0.5));
 
-	amodel.add(new SU::Line(SU::Vector(0, 0, 0), SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0)));
-	amodel.add(new SU::Line(SU::Vector(0, 0, 0), SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0)));
-	amodel.add(new SU::Line(SU::Vector(0, 0, 0), SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255)));
+	cube.add(new SU::Line(0.5, 1, 0.5,		0.5, 0.5, 0));
+	cube.add(new SU::Line(0.5, 1, 0.5,		0, 0.5, 0.5));
+	cube.add(new SU::Line(0.5, 1, 0.5,		0.5, 0.5, 1));
+	cube.add(new SU::Line(0.5, 1, 0.5,		1, 0.5, 0.5));
+
+	cube.add(new SU::Line(0.5, 0.5, 0,		0, 0.5, 0.5));
+	cube.add(new SU::Line(0.5, 0.5, 0,		1, 0.5, 0.5));
+	cube.add(new SU::Line(0.5, 0.5, 1,		0, 0.5, 0.5));
+	cube.add(new SU::Line(0.5, 0.5, 1,		1, 0.5, 0.5));
+
 
 	SU::Object aobject;
-	aobject.model = &amodel;
+	aobject.model = &cube;
 
 	aobject.position = SU::Vector(1, -0.5, 1);
 
+	aobject.transforming = true;
 
 
 
@@ -130,7 +130,7 @@ int main( int argc, char* args[] )
 						break;
 
 						case SDLK_SPACE:
-							SDL_Delay(1000);
+							aobject.enabled = !aobject.enabled;
 						break;
 
 						case SDLK_LEFT:
@@ -181,14 +181,6 @@ int main( int argc, char* args[] )
 
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
-/*		for (int j = 0; j < db; j++)
-		{
-			line(surface, rand() % WIDTH, rand() % HEIGHT, rand() % WIDTH, rand() % HEIGHT, 0xffffffff);
-			SDL_Rect r;
-			r.x = rand() % WIDTH;
-			r.y = rand() % HEIGHT;
-			SDL_BlitSurface(png, NULL, surface, &r);
-		}*/
 
 		SU::render();
 

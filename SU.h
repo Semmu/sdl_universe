@@ -20,9 +20,22 @@ namespace SU
 {
 	// PUBLICLY ACCESSIBLE VARIABLES BELONG HERE
 
+	enum Flags
+	{
+		DEBUG_WIREFRAMING,
+		DEBUG_TRANSFORMATIONS
+//		GLOBAL_LIGHT,
+//		LOCAL_LIGHTS,
+//		BIG_CHUNK_SPLITTING,
+//		COLLISION_SPLITTING,
+//		FAST_DEPTH_SORT,
+//		Z_BUFFER_SORT
+	};
+
 	extern int bgColor;
 	extern double clipNear, clipFar;
 	extern int FOV;
+	extern int flags;
 
 
 
@@ -89,6 +102,8 @@ namespace SU
 
 		virtual Type getType() const = 0;
 		virtual Vector getCenter() const = 0;
+
+		virtual ~Primitive();
 	};
 
 	class Point : public Primitive
@@ -101,6 +116,8 @@ namespace SU
 
 		Type getType() const;
 		Vector getCenter() const;
+
+		~Point();
 	};
 
 	class Line : public Primitive
@@ -113,6 +130,8 @@ namespace SU
 
 		Type getType() const;
 		Vector getCenter() const;
+
+		~Line();
 	};
 
 	class Triangle : public Primitive
@@ -127,6 +146,8 @@ namespace SU
 
 		Type getType() const;
 		Vector getCenter() const;
+
+		~Triangle();
 	};
 
 	class Model
@@ -142,8 +163,13 @@ namespace SU
 	public:
 		static std::list<Object*> objects;
 
+		bool enabled;
+
 		Model* model;
 		Vector position;
+
+		bool transforming;
+		Vector X, Y, Z;
 
 		Object();
 	};
@@ -152,7 +178,10 @@ namespace SU
 
 
 
-	bool init(SDL_Surface* surface);
+	bool init(SDL_Surface* surface, int f = 0);
+
+	void setFlag(int f);
+	void unsetFlag(int f);
 
 	int mapColor(int r, int g, int b);
 
