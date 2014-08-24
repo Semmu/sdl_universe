@@ -1,5 +1,5 @@
 # what to compile
-OBJS = main.cpp
+OBJS = main.cpp SU.cpp
 
 # what to compile with
 CC = g++

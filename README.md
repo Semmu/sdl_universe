@@ -53,6 +53,8 @@ Notes and known bugs
 	* Probably SDL_UpdateTexture() is what slows down the process, from 3ms to 10ms latency.
 
 * When something is too close to the projection plane (which is a plane of z=0), the program will freeze when that thing tries to go behind it. Temporary workaround in instanceIsVectorOnScreen(), because it compares to 0.01 not 0.
+* Only the triangles facing the eye should be rendered. Don't forget to implement this.
+
 
 Licence
 -------
