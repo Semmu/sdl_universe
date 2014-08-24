@@ -120,14 +120,26 @@ int main( int argc, char* args[] )
 
 	SU::Object aobject;
 	aobject.model = &cube;
+	aobject.position = SU::Vector(-0.5, -0.5, 1);
 
-	aobject.position = SU::Vector(1, -0.5, 1);
+	aobject.transforming = true;
+	aobject.X = SU::Vector(1, 0.25, 0);
+	aobject.Y = SU::Vector(-0.25, 1, 0);
 
+	SU::Object second = SU::Object();
+	second.model = &cube;
+	second.position = SU::Vector(2, 1, 0);
 
+	second.transforming = true;
+	second.X = SU::Vector(-0.5, 0, 0);
+	second.Y = SU::Vector(0, -0.5, 0);
+	second.Z = SU::Vector(0, 0, 0.5);
+
+	aobject.addChild(&second);
 
 	for (int i = 0; i < 30; i++)
 	{
-		new Floating();
+		//new Floating();
 	}
 
 
@@ -159,6 +171,11 @@ int main( int argc, char* args[] )
 					switch(e.key.keysym.sym)
 					{
 						case SDLK_ESCAPE:
+						{
+							running = false;
+						}
+
+						case SDLK_q:
 						{
 							running = false;
 						}
@@ -261,7 +278,7 @@ int main( int argc, char* args[] )
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 
-//		SDL_Delay(10);
+		SDL_Delay(10);
 	}
 
 	std::cout << SDL_GetTicks() << " ms / " << count << " frames = " << int(double(SDL_GetTicks()) / count) << " ms average per frame" <<std::endl;

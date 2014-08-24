@@ -132,6 +132,9 @@ namespace SU
 
 		SDL_Surface* surface;
 		int width, height;
+
+		std::list<Object*> everyObject;
+		std::list<Primitive*> primitivesToRender;
 	}
 
 
@@ -348,9 +351,15 @@ namespace SU
 	// Object::objects is static
 	std::list<Object*> Object::objects;
 
-	Object::Object() : enabled(true), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1))
+	Object::Object() : enabled(true), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
 	{
-		objects.push_back(this);
+		everyObject.push_back(this);
+	}
+
+	void Object::addChild(Object* o)
+	{
+		o->parent = this;
+		children.push_back(o);
 	}
 
 
@@ -443,72 +452,94 @@ namespace SU
 		return p;
 	}
 
+	void processObject(Object* o)
+	{
+		if (o->parent != NULL)
+		{
+			o->resultantPosition = o->parent->position + getTransformed(o->position, o->parent->X, o->parent->Y, o->parent->Z);
+			o->resultantX = getTransformed(o->X, o->parent->X, o->parent->Y, o->parent->Z);
+			o->resultantY = getTransformed(o->Y, o->parent->X, o->parent->Y, o->parent->Z);
+			o->resultantZ = getTransformed(o->Z, o->parent->X, o->parent->Y, o->parent->Z);
+		}
+		else
+		{
+			o->resultantPosition = o->position;
+			o->resultantX = o->X;
+			o->resultantY = o->Y;
+			o->resultantZ = o->Z;
+		}
+
+		if (flags & Flags::DEBUG_TRANSFORMATIONS)
+		{
+			primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantX + o->resultantPosition, SU::mapColor(255, 0, 0)));
+			primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantY + o->resultantPosition, SU::mapColor(0, 255, 0)));
+			primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantZ + o->resultantPosition, SU::mapColor(0, 0, 255)));
+		}
+
+		for (Primitive* p : o->model->contents)
+		{
+			switch(p->getType())
+			{
+				case SU::Primitive::Type::POINT:
+				{
+					SU::Point *pt;
+
+					if (o->transforming)
+					{
+						pt = new SU::Point(getTransformed(static_cast<SU::Point*>(p)->P1, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition, p->color);
+					}
+					else
+					{
+						pt = new SU::Point(static_cast<SU::Point*>(p)->P1 + o->resultantPosition);
+					}
+
+					primitivesToRender.push_back(pt);
+				}
+				break;
+
+				case SU::Primitive::Type::LINE:
+				{
+					SU::Line *l;
+
+					if (o->transforming)
+					{
+						l = new SU::Line(getTransformed(static_cast<SU::Line*>(p)->P1, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
+										 getTransformed(static_cast<SU::Line*>(p)->P2, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
+										 p->color);
+					}
+					else
+					{
+						l = new SU::Line(static_cast<SU::Line*>(p)->P1 + o->resultantPosition,
+										 static_cast<SU::Line*>(p)->P2 + o->resultantPosition,
+										 p->color);
+					}
+
+					primitivesToRender.push_back(l);
+				}
+				break;
+
+				default: break;
+			}
+		}
+
+		if (o->children.size() > 0)
+			for(Object *ch : o->children)
+				processObject(ch);
+	}
+
 	void render()
 	{
 		SDL_FillRect(surface, NULL, bgColor);
 
-		std::list<Primitive*> primitives;
-
-		for (Object* o : Object::objects)
+		for (Object* o : everyObject)
 		{
-			if (o->enabled)
+			if (o->enabled && o->parent == NULL)
 			{
-				if (flags & Flags::DEBUG_TRANSFORMATIONS)
-				{
-					primitives.push_back(new SU::Line(o->position, o->X + o->position, SU::mapColor(255, 0, 0)));
-					primitives.push_back(new SU::Line(o->position, o->Y + o->position, SU::mapColor(0, 255, 0)));
-					primitives.push_back(new SU::Line(o->position, o->Z + o->position, SU::mapColor(0, 0, 255)));
-				}
-
-				for (Primitive* p : o->model->contents)
-				{
-					switch(p->getType())
-					{
-						case SU::Primitive::Type::POINT:
-						{
-							SU::Point *pt;
-
-							if (o->transforming)
-							{
-								pt = new SU::Point(getTransformed(static_cast<SU::Point*>(p)->P1, o->X, o->Y, o->Z) + o->position, p->color);
-							}
-							else
-							{
-								pt = new SU::Point(static_cast<SU::Point*>(p)->P1);
-							}
-
-							primitives.push_back(pt);
-						}
-						break;
-
-						case SU::Primitive::Type::LINE:
-						{
-							SU::Line *l;
-
-							if (o->transforming)
-							{
-								l = new SU::Line(getTransformed(static_cast<SU::Line*>(p)->P1, o->X, o->Y, o->Z) + o->position,
-												 getTransformed(static_cast<SU::Line*>(p)->P2, o->X, o->Y, o->Z) + o->position,
-												 p->color);
-							}
-							else
-							{
-								l = new SU::Line(static_cast<SU::Line*>(p)->P1 + o->position,
-												 static_cast<SU::Line*>(p)->P2 + o->position,
-												 p->color);
-							}
-
-							primitives.push_back(l);
-						}
-						break;
-
-						default: break;
-					}
-				}
+				processObject(o);
 			}
 		}
 
-		for (Primitive* p : primitives)
+		for (Primitive* p : primitivesToRender)
 		{
 			if (isOnScreen(p))
 			{
@@ -537,7 +568,6 @@ namespace SU
 			}
 		}
 
-		for(Primitive* p : primitives)
-			delete p;
+		primitivesToRender.clear();
 	}
 }

@@ -10,14 +10,6 @@ double randDouble(double max = 1.0);
 double deg2rad(double d);
 double rad2deg(double r);
 
-bool point(SDL_Surface* dst, int x1, int y1, int color);
-bool point(SDL_Surface* dst, SDL_Point p, int c);
-
-bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color);
-bool line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c);
-
-
-
 namespace SU
 {
 	// PUBLICLY ACCESSIBLE VARIABLES BELONG HERE
@@ -173,7 +165,14 @@ namespace SU
 		bool transforming;
 		Vector X, Y, Z;
 
+		Vector resultantPosition;
+		Vector resultantX, resultantY, resultantZ;
+
+		std::list<Object*> children;
+		Object* parent;
+
 		Object();
+		void addChild(Object* o);
 	};
 
 
