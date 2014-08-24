@@ -374,6 +374,11 @@ namespace SU
 
 	void unsetFlag(int f)
 	{
+		flags = (flags & ~f);
+	}
+
+	void toggleFlag(int f)
+	{
 		flags ^= f;
 	}
 

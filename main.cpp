@@ -172,7 +172,7 @@ int main( int argc, char* args[] )
 
 						case SDLK_d:
 						{
-							SU::unsetFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
+							SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
 						}
 						break;
 

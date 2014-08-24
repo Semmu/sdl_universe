@@ -184,6 +184,7 @@ namespace SU
 
 	void setFlag(int f);
 	void unsetFlag(int f);
+	void toggleFlag(int f);
 
 	int mapColor(int r, int g, int b);
 

@@ -5,10 +5,10 @@ OBJS = main.cpp SU.cpp
 CC = g++
 
 # compile flags
-COMPILER_FLAGS = -Wall -std=c++11
+COMPILER_FLAGS = -Wall -std=c++11 `sdl2-config --cflags`
 
 # what to link
-LINKER_FLAGS = -lSDL2 -lSDL2_ttf
+LINKER_FLAGS = `sdl2-config --libs` -lSDL2_ttf
 
 # output name
 OBJ_NAME = sdl_universe
@@ -24,4 +24,4 @@ $(OBJ_NAME): $(OBJS)
 
 # fresh start
 clean:
-	rm $(OBJ_NAME)
+	rm -f $(OBJ_NAME) *.o
