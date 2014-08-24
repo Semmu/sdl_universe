@@ -429,9 +429,15 @@ namespace SU
 
 	SDL_Point positionOnScreen(const Vector& v)
 	{
+
 		SDL_Point p;
 
-		double left = clipNear / sin(deg2rad(FOV / 2)) * sin(deg2rad(90 - FOV / 2));
+		// FIXME: something is wrong with FOV, should get a verification
+		double left = clipNear / sin(deg2rad(90 - FOV / 2)) * sin(deg2rad(FOV / 2));
+		// this line was:
+		// double left = clipNear / sin(deg2rad(FOV / 2)) * sin(deg2rad(90 - FOV / 2));
+
+
 		double up = left / width * height;
 
 		Vector leftVector(-left, 0, 0);
@@ -463,6 +469,8 @@ namespace SU
 		}
 		else
 		{
+			// camera position and direction should affect these
+
 			o->resultantPosition = o->position;
 			o->resultantX = o->X;
 			o->resultantY = o->Y;

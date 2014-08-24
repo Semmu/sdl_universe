@@ -229,6 +229,17 @@ int main( int argc, char* args[] )
 						}
 						break;
 
+						case SDLK_KP_MINUS:
+						{
+							SU::FOV--;
+						}
+						break;
+
+						case SDLK_KP_PLUS:
+						{
+							SU::FOV++;
+						}
+
 						default: break;
 					}
 
@@ -258,7 +269,7 @@ int main( int argc, char* args[] )
 		std::stringstream fps;
 		// this FPS counter display the total average, not the current
 		// will be changed
-		fps << " " << int(1000.0 / (double(SDL_GetTicks()) / count));
+		fps << " " << int(1000.0 / (double(SDL_GetTicks()) / count)) << " FOV=" << SU::FOV;
 		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
 		if (text == NULL)
 			DIE(TTF_GetError());
@@ -280,8 +291,6 @@ int main( int argc, char* args[] )
 
 		SDL_Delay(10);
 	}
-
-	std::cout << SDL_GetTicks() << " ms / " << count << " frames = " << int(double(SDL_GetTicks()) / count) << " ms average per frame" <<std::endl;
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
