@@ -6,6 +6,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 double deg2rad(double d)
 {
@@ -396,8 +397,15 @@ public:
 	{
 	public:
 		std::list<Primitive*> contents;
+
+		void add(Primitive* p)
+		{
+			contents.push_back(p);
+		}
 	};
 
+
+	// TODO: maybe the Transformation and Object class should be merged
 	class Transformation
 	{
 	public:
@@ -413,8 +421,15 @@ public:
 	class Object
 	{
 	public:
+		static std::list<Object*> objects;
+
 		Model* model;
-		Transformation* transformation;
+		Transformation transformation;
+
+		Object() : model(NULL)
+		{
+			objects.push_back(this);
+		}
 	};
 
 
@@ -476,13 +491,40 @@ private:
 
 			default: break;
 		}
+
+		return false;
 	}
 
 	void instanceRender()
 	{
 		SDL_FillRect(surface, NULL, bgColor);
 
-		for (Primitive* p : Primitive::primitives)
+		std::list<Primitive*> primitives;
+
+		for (Object* o : Object::objects)
+		{
+			for (Primitive* p : o->model->contents)
+			{
+				switch(p->getType())
+				{
+					case SU::Primitive::Type::POINT:
+					{
+						primitives.push_back(new SU::Point(static_cast<SU::Point*>(p)->p1 + o->transformation.position, p->color));
+					}
+					break;
+
+					case SU::Primitive::Type::LINE:
+					{
+						primitives.push_back(new SU::Line(static_cast<SU::Line*>(p)->p1 + o->transformation.position, static_cast<SU::Line*>(p)->p2 + o->transformation.position, p->color));
+					}
+					break;
+
+					default: break;
+				}
+			}
+		}
+
+		for (Primitive* p : primitives)
 		{
 			if (true)
 			if (instanceIsPrimitiveOnScreen(p))
@@ -533,6 +575,7 @@ SU::Vector operator*(const double d, const SU::Vector v)
 }
 
 std::list<SU::Primitive*> SU::Primitive::primitives;
+std::list<SU::Object*> SU::Object::objects;
 
 
 
@@ -567,6 +610,8 @@ int main( int argc, char* args[] )
 
 	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
+	if(TTF_Init() == -1)
+		DIE(TTF_GetError());
 	atexit(SDL_Quit);
 
 
@@ -592,25 +637,49 @@ int main( int argc, char* args[] )
 
 	SDL_Surface *png = IMG_Load("tetris_pe.png");
 
-	std::cout << SU::Primitive::primitives.size() << std::endl;
-
 	SU::init(surface);
 
-	SU::Point p1(SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255));
-	SU::Point p2(SU::Vector(0, 1, 1), SU::mapColor(0, 255, 255));
-	SU::Point p3(SU::Vector(0, 0, 0), SU::mapColor(64, 64, 64));
-	SU::Point p4(SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0));
 
-	SU::Point p5(SU::Vector(1, 0, 1), SU::mapColor(255, 0, 255));
-	SU::Point p6(SU::Vector(1, 1, 1), SU::mapColor(255, 255, 255));
-	SU::Point p7(SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0));
-	SU::Point p8(SU::Vector(1, 1, 0), SU::mapColor(255, 255, 0));
+	TTF_Font *font = TTF_OpenFont("./Deltoid-sans.ttf", 32);
+	if (font == NULL)
+		DIE(TTF_GetError());
 
-	SU::Line l1(SU::Vector(0, 0, 0), SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0));
-	SU::Line l2(SU::Vector(0, 0, 0), SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0));
-	SU::Line l3(SU::Vector(0, 0, 0), SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255));
 
-	std::cout << SU::Primitive::primitives.size() << std::endl;
+
+
+
+	SU::Model amodel;
+	amodel.add(new SU::Point(SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255)));
+	amodel.add(new SU::Point(SU::Vector(0, 1, 1), SU::mapColor(0, 255, 255)));
+	amodel.add(new SU::Point(SU::Vector(0, 0, 0), SU::mapColor(64, 64, 64)));
+	amodel.add(new SU::Point(SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0)));
+
+	amodel.add(new SU::Point(SU::Vector(1, 0, 1), SU::mapColor(255, 0, 255)));
+	amodel.add(new SU::Point(SU::Vector(1, 1, 1), SU::mapColor(255, 255, 255)));
+	amodel.add(new SU::Point(SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0)));
+	amodel.add(new SU::Point(SU::Vector(1, 1, 0), SU::mapColor(255, 255, 0)));
+
+	amodel.add(new SU::Line(SU::Vector(0, 0, 0), SU::Vector(1, 0, 0), SU::mapColor(255, 0, 0)));
+	amodel.add(new SU::Line(SU::Vector(0, 0, 0), SU::Vector(0, 1, 0), SU::mapColor(0, 255, 0)));
+	amodel.add(new SU::Line(SU::Vector(0, 0, 0), SU::Vector(0, 0, 1), SU::mapColor(0, 0, 255)));
+
+	SU::Object aobject;
+	aobject.model = &amodel;
+
+	aobject.transformation.position = SU::Vector(1, -0.5, 1);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	while (running)
@@ -639,121 +708,37 @@ int main( int argc, char* args[] )
 
 						case SDLK_LEFT:
 						{
-							p1.p1.x -= 0.1;
-							p2.p1.x -= 0.1;
-							p3.p1.x -= 0.1;
-							p4.p1.x -= 0.1;
-							p5.p1.x -= 0.1;
-							p6.p1.x -= 0.1;
-							p7.p1.x -= 0.1;
-							p8.p1.x -= 0.1;
-
-							l1.p1.x -= 0.1;
-							l1.p2.x -= 0.1;
-							l2.p1.x -= 0.1;
-							l2.p2.x -= 0.1;
-							l3.p1.x -= 0.1;
-							l3.p2.x -= 0.1;
+							aobject.transformation.position.x -= 0.1;
 						}
 						break;
 
 						case SDLK_RIGHT:
 						{
-							p1.p1.x += 0.1;
-							p2.p1.x += 0.1;
-							p3.p1.x += 0.1;
-							p4.p1.x += 0.1;
-							p5.p1.x += 0.1;
-							p6.p1.x += 0.1;
-							p7.p1.x += 0.1;
-							p8.p1.x += 0.1;
-
-							l1.p1.x += 0.1;
-							l1.p2.x += 0.1;
-							l2.p1.x += 0.1;
-							l2.p2.x += 0.1;
-							l3.p1.x += 0.1;
-							l3.p2.x += 0.1;
+							aobject.transformation.position.x += 0.1;
 						}
 						break;
 
 						case SDLK_DOWN:
 						{
-							p1.p1.y -= 0.1;
-							p2.p1.y -= 0.1;
-							p3.p1.y -= 0.1;
-							p4.p1.y -= 0.1;
-							p5.p1.y -= 0.1;
-							p6.p1.y -= 0.1;
-							p7.p1.y -= 0.1;
-							p8.p1.y -= 0.1;
-
-							l1.p1.y -= 0.1;
-							l1.p2.y -= 0.1;
-							l2.p1.y -= 0.1;
-							l2.p2.y -= 0.1;
-							l3.p1.y -= 0.1;
-							l3.p2.y -= 0.1;
+							aobject.transformation.position.y -= 0.1;
 						}
 						break;
 
 						case SDLK_UP:
 						{
-							p1.p1.y += 0.1;
-							p2.p1.y += 0.1;
-							p3.p1.y += 0.1;
-							p4.p1.y += 0.1;
-							p5.p1.y += 0.1;
-							p6.p1.y += 0.1;
-							p7.p1.y += 0.1;
-							p8.p1.y += 0.1;
-
-							l1.p1.y += 0.1;
-							l1.p2.y += 0.1;
-							l2.p1.y += 0.1;
-							l2.p2.y += 0.1;
-							l3.p1.y += 0.1;
-							l3.p2.y += 0.1;
+							aobject.transformation.position.y += 0.1;
 						}
 						break;
 
 						case SDLK_s:
 						{
-							p1.p1.z -= 0.1;
-							p2.p1.z -= 0.1;
-							p3.p1.z -= 0.1;
-							p4.p1.z -= 0.1;
-							p5.p1.z -= 0.1;
-							p6.p1.z -= 0.1;
-							p7.p1.z -= 0.1;
-							p8.p1.z -= 0.1;
-
-							l1.p1.z -= 0.1;
-							l1.p2.z -= 0.1;
-							l2.p1.z -= 0.1;
-							l2.p2.z -= 0.1;
-							l3.p1.z -= 0.1;
-							l3.p2.z -= 0.1;
+							aobject.transformation.position.z -= 0.1;
 						}
 						break;
 
 						case SDLK_w:
 						{
-							p1.p1.z += 0.1;
-							p2.p1.z += 0.1;
-							p3.p1.z += 0.1;
-							p4.p1.z += 0.1;
-							p5.p1.z += 0.1;
-							p6.p1.z += 0.1;
-							p7.p1.z += 0.1;
-							p8.p1.z += 0.1;
-
-							l1.p1.z += 0.1;
-							l1.p2.z += 0.1;
-							l2.p1.z += 0.1;
-							l2.p2.z += 0.1;
-							l3.p1.z += 0.1;
-							l3.p2.z += 0.1;
+							aobject.transformation.position.z += 0.1;
 						}
 						break;
 
@@ -780,13 +765,26 @@ int main( int argc, char* args[] )
 
 		SU::render();
 
+		SDL_Color c = {128, 128, 128};
+		std::stringstream fps;
+		// this FPS counter display the total average, not the current
+		// will be changed
+		fps << " " << int(1000.0 / (double(SDL_GetTicks()) / count)) << " fps";
+		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
+		if (text == NULL)
+			DIE(TTF_GetError());
+
+		SDL_BlitSurface(text, NULL, surface, NULL);
+
 		count++;
 
 
 
 		// TODO:
 		// which is faster? this method or SDL_CreateSoftwareRenderer?
+		// or CreateTextureFromSurface() ???
 		SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
+		SDL_FreeSurface(text);
 
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);

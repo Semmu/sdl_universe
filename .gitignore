@@ -4,7 +4,7 @@
 .fuse_hidden*
 
 # the binary
-SU
+sdl_universe
 
 ### C++ ###
 # Compiled Object files

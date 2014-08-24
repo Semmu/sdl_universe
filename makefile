@@ -8,10 +8,10 @@ CC = g++
 COMPILER_FLAGS = -Wall -std=c++11
 
 # what to link
-LINKER_FLAGS = -lSDL2 -lSDL2_image
+LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 
 # output name
-OBJ_NAME = SU
+OBJ_NAME = sdl_universe
 
 
 # always run, i like it
