@@ -282,7 +282,8 @@ namespace SU
 						cos(angle) * selfOrthogonalComponent +
 						selfAxisComponent;
 
-		// sadly, doubles aren't flawless
+		// sadly, doubles are inaccurate, we have to set the length of the result vector manually
+		// without this, the inaccury would distort the vectors
 		result.setLength(getLength());
 
 		return result;

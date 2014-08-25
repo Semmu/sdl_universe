@@ -66,6 +66,7 @@ public:
 };
 std::list<Floating*> Floating::all;
 
+std::list<SDL_Keycode> pressed_down_keys;
 
 int main( int argc, char* args[] )
 {
@@ -174,119 +175,132 @@ int main( int argc, char* args[] )
 					running = false;
 				break;
 
+				case SDL_KEYUP:
+				{
+					pressed_down_keys.remove(e.key.keysym.sym);
+				}
+				break;
+
 				case SDL_KEYDOWN:
-
-					switch(e.key.keysym.sym)
+				{
+					if (e.key.repeat == 0)
 					{
-						case SDLK_ESCAPE:
-						{
-							running = false;
-						}
-
-						case SDLK_SPACE:
-						{
-							aobject.enabled = !aobject.enabled;
-						}
-						break;
-
-						case SDLK_h:
-						{
-							SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
-						}
-						break;
-
-						case SDLK_LEFT:
-						{
-							SU::Camera::position.x -= 0.1;
-						}
-						break;
-
-						case SDLK_RIGHT:
-						{
-							SU::Camera::position.x += 0.1;
-						}
-						break;
-
-						case SDLK_DOWN:
-						{
-							SU::Camera::position.z -= 0.1;
-						}
-						break;
-
-						case SDLK_UP:
-						{
-							SU::Camera::position.z += 0.1;
-						}
-						break;
-
-						case SDLK_PAGEUP:
-						{
-							SU::Camera::position.y += 0.1;
-						}
-						break;
-
-						case SDLK_PAGEDOWN:
-						{
-							SU::Camera::position.y -= 0.1;
-						}
-						break;
-
-						case SDLK_KP_MINUS:
-						{
-							SU::Camera::FOV--;
-						}
-						break;
-
-						case SDLK_KP_PLUS:
-						{
-							SU::Camera::FOV++;
-						}
-
-						case SDLK_w:
-						{
-							aobject.rotateAroundX(0.1);
-						}
-						break;
-
-						case SDLK_s:
-						{
-							aobject.rotateAroundX(-0.1);
-						}
-						break;
-
-						case SDLK_a:
-						{
-							aobject.rotateAroundY(0.1);
-						}
-						break;
-
-						case SDLK_d:
-						{
-							aobject.rotateAroundY(-0.1);
-						}
-						break;
-
-						case SDLK_q:
-						{
-							aobject.rotateAroundZ(0.1);
-						}
-						break;
-
-						case SDLK_e:
-						{
-							aobject.rotateAroundZ(-0.1);
-						}
-						break;
-
-						default: break;
+						pressed_down_keys.push_back(e.key.keysym.sym);
 					}
-
+				}
 				break;
 
 				default: break;
 			}
 		}
 
+		for(SDL_Keycode k : pressed_down_keys)
+		{
+			switch(k)
+			{
+				case SDLK_ESCAPE:
+				{
+					running = false;
+				}
+
+				case SDLK_SPACE:
+				{
+					aobject.enabled = !aobject.enabled;
+				}
+				break;
+
+				case SDLK_h:
+				{
+					SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
+				}
+				break;
+
+				case SDLK_LEFT:
+				{
+					SU::Camera::position.x -= 0.1;
+				}
+				break;
+
+				case SDLK_RIGHT:
+				{
+					SU::Camera::position.x += 0.1;
+				}
+				break;
+
+				case SDLK_DOWN:
+				{
+					SU::Camera::position.z -= 0.1;
+				}
+				break;
+
+				case SDLK_UP:
+				{
+					SU::Camera::position.z += 0.1;
+				}
+				break;
+
+				case SDLK_PAGEUP:
+				{
+					SU::Camera::position.y += 0.1;
+				}
+				break;
+
+				case SDLK_PAGEDOWN:
+				{
+					SU::Camera::position.y -= 0.1;
+				}
+				break;
+
+				case SDLK_KP_MINUS:
+				{
+					SU::Camera::FOV--;
+				}
+				break;
+
+				case SDLK_KP_PLUS:
+				{
+					SU::Camera::FOV++;
+				}
+
+				case SDLK_w:
+				{
+					aobject.rotateAroundX(0.1);
+				}
+				break;
+
+				case SDLK_s:
+				{
+					aobject.rotateAroundX(-0.1);
+				}
+				break;
+
+				case SDLK_a:
+				{
+					aobject.rotateAroundY(0.1);
+				}
+				break;
+
+				case SDLK_d:
+				{
+					aobject.rotateAroundY(-0.1);
+				}
+				break;
+
+				case SDLK_q:
+				{
+					aobject.rotateAroundZ(0.1);
+				}
+				break;
+
+				case SDLK_e:
+				{
+					aobject.rotateAroundZ(-0.1);
+				}
+				break;
+
+				default: break;
+			}
+		}
 
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
