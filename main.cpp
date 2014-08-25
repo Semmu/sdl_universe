@@ -63,6 +63,16 @@ public:
 	{
 		destination = SU::Vector(randDouble(50.0) - 25.0, randDouble(20.0) - 10.0, randDouble(25) + 1);
 	}
+
+	void move()
+	{
+		direction = direction + (destination - obj.position).getNormalized();
+
+		obj.position += direction.getNormalized() / 20;
+
+		if ((destination - obj.position).getLength() < 1)
+			newDestination();
+	}
 };
 std::list<Floating*> Floating::all;
 
@@ -147,8 +157,9 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-//		new Floating();
+		new Floating();
 	}
+	bool move = false;
 
 
 
@@ -187,7 +198,10 @@ int main( int argc, char* args[] )
 				{
 					if (e.key.repeat == 0)
 					{
-						pressed_down_keys.push_back(e.key.keysym.sym);
+						if (e.key.keysym.sym == SDLK_SPACE)
+							move = !move;
+						else
+							pressed_down_keys.push_back(e.key.keysym.sym);
 					}
 				}
 				break;
@@ -203,12 +217,6 @@ int main( int argc, char* args[] )
 				case SDLK_ESCAPE:
 				{
 					running = false;
-				}
-				break;
-
-				case SDLK_SPACE:
-				{
-					aobject.enabled = !aobject.enabled;
 				}
 				break;
 
@@ -308,16 +316,9 @@ int main( int argc, char* args[] )
 
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
-
-		for (Floating* f : Floating::all)
-		{
-			f->direction = (f->direction + (f->destination - f->obj.position).getNormalized()).getNormalized() * 3;
-
-			f->obj.position += f->direction * 0.01;
-
-			if ((f->destination - f->obj.position).getLength() < 1)
-				f->newDestination();
-		}
+		if (move)
+			for (Floating* f : Floating::all)
+				f->move();
 
 		SU::render();
 

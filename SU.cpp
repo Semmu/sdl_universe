@@ -120,6 +120,11 @@ bool line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
 	return line(dst, p1.x, p1.y, p2.x, p2.y, c);
 }
 
+bool sortPrimitivesNearToFar(const SU::Primitive* p1, const SU::Primitive* p2)
+{
+	return (p1->getCenter() - SU::Camera::position).getLength() > (p2->getCenter() - SU::Camera::position).getLength();
+}
+
 namespace SU
 {
 	// ==============================================================================
@@ -467,8 +472,8 @@ namespace SU
 
 	bool isOnScreen(const Vector& v)
 	{
-		// FIXME: if we compare to 0, the program will freeze in certain situations, where something is too close to the projection plane
-		return (v.z > 0.0001);
+		// FIXME: this does not behave as it should. really not.
+		return ((v - Camera::position) ^ Camera::lookDirection) < M_PI / 2 - 0.01;
 	}
 
 	bool isOnScreen(const Primitive* p)
@@ -546,9 +551,20 @@ namespace SU
 
 		if (flags & Flags::DEBUG_TRANSFORMATIONS)
 		{
-			primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantX + o->resultantPosition, SU::mapColor(255, 0, 0)));
-			primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantY + o->resultantPosition, SU::mapColor(0, 255, 0)));
-			primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantZ + o->resultantPosition, SU::mapColor(0, 0, 255)));
+			if (o->transforming)
+			{
+				primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantX + o->resultantPosition, SU::mapColor(255, 0, 0)));
+				primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantY + o->resultantPosition, SU::mapColor(0, 255, 0)));
+				primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantZ + o->resultantPosition, SU::mapColor(0, 0, 255)));
+			}
+			else
+			{
+				// if the Object isn't transformed, we should draw the normal axes
+
+				primitivesToRender.push_back(new SU::Line(o->resultantPosition, Vector(1, 0, 0) + o->resultantPosition, SU::mapColor(255, 0, 0)));
+				primitivesToRender.push_back(new SU::Line(o->resultantPosition, Vector(0, 1, 0) + o->resultantPosition, SU::mapColor(0, 255, 0)));
+				primitivesToRender.push_back(new SU::Line(o->resultantPosition, Vector(0, 0, 1) + o->resultantPosition, SU::mapColor(0, 0, 255)));
+			}
 		}
 
 		for (Primitive* p : o->model->contents)
@@ -604,13 +620,23 @@ namespace SU
 
 	void render()
 	{
+		// FIXME: FOV value restriction should be somewhere else?
+
 		if (Camera::FOV < 10)
 			Camera::FOV = 10;
 
 		if (Camera::FOV > 170)
 			Camera::FOV = 170;
 
+
 		SDL_FillRect(surface, NULL, bgColor);
+
+
+		/*
+		 *
+		 *	COLLECTING WHAT PRIMITIVES TO RENDER
+		 *
+		 */
 
 		for (Object* o : everyObject)
 		{
@@ -619,6 +645,24 @@ namespace SU
 				processObject(o);
 			}
 		}
+
+
+
+		/*
+		 *
+		 *	SORTING THE PRIMITIVES
+		 *
+		 */
+
+		 primitivesToRender.sort(sortPrimitivesNearToFar);
+
+
+
+		/*
+		 *
+		 *	RENDERING THE PRIMITIVES
+		 *
+		 */
 
 		for (Primitive* p : primitivesToRender)
 		{
@@ -649,8 +693,18 @@ namespace SU
 			}
 		}
 
+
+
+
+		/*
+		 *
+		 *	FREEING UP MEMORY AFTER RENDER
+		 *
+		 */
+
 		for(Primitive* p : primitivesToRender)
 			delete p;
+
 		primitivesToRender.clear();
 	}
 }
