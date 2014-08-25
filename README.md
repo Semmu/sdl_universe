@@ -41,7 +41,9 @@ Planned or already implemented features
 
 What is done
 ------------
-* Since I just started this, almost nothing. But keep an eye on this project, I will likely progress fast (I'll have to finish it in time because I will do a presentation about it)
+* Can bundle primitives in a SU::Model and render them (well, triangle drawing isn't implemented yet)
+* Can create tree-like SU::Object hierarchy
+* Transformations work and inherit properly
 
 
 
@@ -55,6 +57,7 @@ Notes and known bugs
 
 * When something is too close to the projection plane (which is a plane of z=0), the program will freeze when that thing tries to go behind it. Temporary workaround in instanceIsVectorOnScreen(), because it compares to 0.01 not 0.
 * Only the triangles facing the eye should be rendered. Don't forget to implement this.
+* The current implementation is **not** idiot-proof, use everything as intended. Variable and function names are pretty straightforward, but if something does not work, feel free to ask.
 
 
 Licence

@@ -163,6 +163,19 @@ namespace SU
 	};
 
 
+	namespace Camera
+	{
+		extern int FOV;
+
+		extern double viewDistanceMin,
+					  viewDistanceMax;
+
+		extern Vector position,
+					  lookDirection,
+					  upDirection;
+	}
+
+
 
 
 
@@ -185,12 +198,7 @@ namespace SU
 	};
 
 	extern int bgColor;
-	extern double clipNear, clipFar;
-	extern int FOV;
 	extern int flags;
-
-
-
 
 
 	// ==============================================================================

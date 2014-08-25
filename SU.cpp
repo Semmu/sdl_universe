@@ -127,12 +127,20 @@ namespace SU
 	//
 	// ==============================================================================
 
+	namespace Camera
+	{
+		int FOV = 60;
+
+		double viewDistanceMin = 1.0,
+			   viewDistanceMax = 100.0;
+
+		Vector position = Vector(0, 0, 0),
+			   lookDirection = Vector(0, 0, 1),
+			   upDirection = Vector(0, 1, 0);
+	}
+
 	int bgColor = 0;
-	double clipNear = 1.0, clipFar = 100.0;
-	int FOV = 60;
 	int flags = 0;
-
-
 
 
 
@@ -462,9 +470,9 @@ namespace SU
 		SDL_Point p;
 
 		// FIXME: something is wrong with FOV, should get a verification
-		double left = clipNear / sin(deg2rad(90 - FOV)) * sin(deg2rad(FOV));
+		double left = Camera::viewDistanceMin / sin(deg2rad(90 - Camera::FOV)) * sin(deg2rad(Camera::FOV));
 		// this line was:
-		// double left = clipNear / sin(deg2rad(FOV / 2)) * sin(deg2rad(90 - FOV / 2));
+		// double left = Camera::viewDistanceMin / sin(deg2rad(Camera::FOV / 2)) * sin(deg2rad(90 - Camera::FOV / 2));
 
 
 		double up = left / width * height;
@@ -476,8 +484,8 @@ namespace SU
 
 		Vector vectorToPointOnScreen;
 
-		vectorToPointOnScreen.x = v.x * clipNear / v.z;
-		vectorToPointOnScreen.y = v.y * clipNear / v.z;
+		vectorToPointOnScreen.x = v.x * Camera::viewDistanceMin / v.z;
+		vectorToPointOnScreen.y = v.y * Camera::viewDistanceMin / v.z;
 
 		Vector vectorToPointFromCorner = vectorToPointOnScreen + rightVector + downVector;
 
@@ -491,16 +499,16 @@ namespace SU
 	{
 		if (o->parent != NULL)
 		{
-			o->resultantPosition = o->parent->position + getTransformed(o->position, o->parent->X, o->parent->Y, o->parent->Z);
-			o->resultantX = getTransformed(o->X, o->parent->X, o->parent->Y, o->parent->Z);
-			o->resultantY = getTransformed(o->Y, o->parent->X, o->parent->Y, o->parent->Z);
-			o->resultantZ = getTransformed(o->Z, o->parent->X, o->parent->Y, o->parent->Z);
+			o->resultantPosition = o->parent->resultantPosition + getTransformed(o->position, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
+			o->resultantX = getTransformed(o->X, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
+			o->resultantY = getTransformed(o->Y, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
+			o->resultantZ = getTransformed(o->Z, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
 		}
 		else
 		{
 			// camera position and direction should affect these
 
-			o->resultantPosition = o->position;
+			o->resultantPosition = o->position - SU::Camera::position;
 			o->resultantX = o->X;
 			o->resultantY = o->Y;
 			o->resultantZ = o->Z;

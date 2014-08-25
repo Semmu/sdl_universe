@@ -41,7 +41,7 @@ public:
 	SU::Vector direction, destination;
 
 
-	Floating()
+	Floating(bool distort = false)
 	{
 		direction = SU::Vector(randDouble(), randDouble(), randDouble()).getNormalized();
 
@@ -51,7 +51,7 @@ public:
 
 		obj.model = &cube;
 
-		obj.transforming = true;
+		obj.transforming = distort;
 		obj.X = SU::Vector(1, randDouble(1) - 0.5, randDouble(1) - 0.5).getNormalized();
 		obj.Y = SU::Vector(randDouble(1) - 0.5, 1, randDouble(1) - 0.5).getNormalized();
 		obj.Z = SU::Vector(randDouble(1) - 0.5, randDouble(1) - 0.5, 1).getNormalized();
@@ -99,9 +99,6 @@ int main( int argc, char* args[] )
 
 	SU::init(surface, SU::Flags::DEBUG_TRANSFORMATIONS);
 
-	SU::clipNear = 0.86602540378;
-	SU::FOV = 60;
-
 
 	TTF_Font *font = TTF_OpenFont("./Deltoid-sans.ttf", 32);
 	if (font == NULL)
@@ -128,13 +125,13 @@ int main( int argc, char* args[] )
 	cube.add(new SU::Line(0, 0.5, 0,		0, 0, -0.5));
 
 
-/*	SU::Object aobject;
+	SU::Object aobject;
 	aobject.model = &cube;
-	aobject.position = SU::Vector(-0.5, -0.5, 0);
+	aobject.position = SU::Vector(-0.5, -0.5, 1.5);
 
 	aobject.transforming = true;
-//	aobject.X = SU::Vector(1, 0.25, 0);
-//	aobject.Y = SU::Vector(-0.25, 1, 0);
+	aobject.X = SU::Vector(1, 0.25, 0);
+	aobject.Y = SU::Vector(-0.25, 1, 0);
 
 	SU::Object second = SU::Object();
 	second.model = &cube;
@@ -143,22 +140,15 @@ int main( int argc, char* args[] )
 	second.transforming = true;
 	second.X = SU::Vector(-0.5, 0, 0);
 	second.Y = SU::Vector(0, -0.5, 0);
-	second.Z = SU::Vector(0, 0, 0.5);*/
+	second.Z = SU::Vector(0, 0, 0.5);
 
-//	aobject.addChild(&second);
+	aobject.addChild(&second);
 
 	for (int i = 0; i < 300; i++)
 	{
-		new Floating();
+//		new Floating();
 	}
 
-	SU::Object aobject;
-	aobject.model = &cube;
-	aobject.position = SU::Vector(-0.5, 0, 0);
-	aobject.transforming = true;
-	aobject.X /= 4;
-	aobject.Y /= 4;
-	aobject.Z /= 4;
 
 
 
@@ -213,49 +203,49 @@ int main( int argc, char* args[] )
 
 						case SDLK_LEFT:
 						{
-							aobject.position.x -= 0.1;
+							SU::Camera::position.x -= 0.1;
 						}
 						break;
 
 						case SDLK_RIGHT:
 						{
-							aobject.position.x += 0.1;
+							SU::Camera::position.x += 0.1;
 						}
 						break;
 
 						case SDLK_DOWN:
 						{
-							aobject.position.y -= 0.1;
+							SU::Camera::position.y -= 0.1;
 						}
 						break;
 
 						case SDLK_UP:
 						{
-							aobject.position.y += 0.1;
+							SU::Camera::position.y += 0.1;
 						}
 						break;
 
 						case SDLK_s:
 						{
-							aobject.position.z -= 0.1;
+							SU::Camera::position.z -= 0.1;
 						}
 						break;
 
 						case SDLK_w:
 						{
-							aobject.position.z += 0.1;
+							SU::Camera::position.z += 0.1;
 						}
 						break;
 
 						case SDLK_KP_MINUS:
 						{
-							SU::FOV--;
+							SU::Camera::FOV--;
 						}
 						break;
 
 						case SDLK_KP_PLUS:
 						{
-							SU::FOV++;
+							SU::Camera::FOV++;
 						}
 
 						default: break;
@@ -287,7 +277,7 @@ int main( int argc, char* args[] )
 		std::stringstream fps;
 		// this FPS counter display the total average, not the current
 		// will be changed
-		fps << " " << int(1000.0 / (double(SDL_GetTicks()) / count)) << " FOV=" << SU::FOV;
+		fps << " " << int(1000.0 / (double(SDL_GetTicks()) / count)) << " Camera::FOV=" << SU::Camera::FOV;
 		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
 		if (text == NULL)
 			DIE(TTF_GetError());
