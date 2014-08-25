@@ -500,7 +500,7 @@ namespace SU
 		SDL_Point p;
 
 		// FIXME: something is wrong with FOV, should get a verification
-		double left = Camera::viewDistanceMin / sin(deg2rad(90 - Camera::FOV)) * sin(deg2rad(Camera::FOV));
+		double left = Camera::viewDistanceMin / sin(deg2rad(90 - Camera::FOV / 2)) * sin(deg2rad(Camera::FOV / 2));
 		// this line was:
 		// double left = Camera::viewDistanceMin / sin(deg2rad(Camera::FOV / 2)) * sin(deg2rad(90 - Camera::FOV / 2));
 
@@ -604,6 +604,12 @@ namespace SU
 
 	void render()
 	{
+		if (Camera::FOV < 10)
+			Camera::FOV = 10;
+
+		if (Camera::FOV > 170)
+			Camera::FOV = 170;
+
 		SDL_FillRect(surface, NULL, bgColor);
 
 		for (Object* o : everyObject)

@@ -172,7 +172,9 @@ int main( int argc, char* args[] )
 			switch (e.type)
 			{
 				case SDL_QUIT:
+				{
 					running = false;
+				}
 				break;
 
 				case SDL_KEYUP:
@@ -202,6 +204,7 @@ int main( int argc, char* args[] )
 				{
 					running = false;
 				}
+				break;
 
 				case SDLK_SPACE:
 				{
@@ -261,6 +264,7 @@ int main( int argc, char* args[] )
 				{
 					SU::Camera::FOV++;
 				}
+				break;
 
 				case SDLK_w:
 				{
