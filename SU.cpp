@@ -1,3 +1,4 @@
+#include <iostream>
 #include "SU.h"
 #include <sstream>
 
@@ -272,9 +273,19 @@ namespace SU
 
 	Vector Vector::rotated(const Vector& axis, const double angle) const
 	{
-		// TODO
+		Vector selfAxisComponent = projectionOn(axis);
+		Vector selfOrthogonalComponent = operator-(selfAxisComponent);
 
-		exit(13);
+		Vector orthogonalOrthogonal = axis.crossProduct(selfOrthogonalComponent);
+
+		Vector result = sin(angle) * orthogonalOrthogonal +
+						cos(angle) * selfOrthogonalComponent +
+						selfAxisComponent;
+
+		// sadly, doubles aren't flawless
+		result.setLength(getLength());
+
+		return result;
 	}
 
 	std::string Vector::toString() const
@@ -389,6 +400,24 @@ namespace SU
 	{
 		o->parent = this;
 		children.push_back(o);
+	}
+
+	void Object::rotateAroundX(double a)
+	{
+		Y = Y.rotated(X, a);
+		Z = Z.rotated(X, a);
+	}
+
+	void Object::rotateAroundY(double a)
+	{
+		X = X.rotated(Y, a);
+		Z = Z.rotated(Y, a);
+	}
+
+	void Object::rotateAroundZ(double a)
+	{
+		X = X.rotated(Z, a);
+		Y = Y.rotated(Z, a);
 	}
 
 

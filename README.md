@@ -17,8 +17,7 @@ Planned or already implemented features
 
 * Render colored points, lines and filled triangles positioned in 3D space (these are the primitives)
 * SU::Model to bundle these primitives, also to save and load them via a file
-* SU::Transformation to transform SU::Models (rotate, scale, mirror, translate, everything)
-* SU::Object tree container to group and easily manipulate SU::Models (transform a group of them at once, etc.)
+* SU::Object tree-like hierarchy to group and easily manipulate SU::Models (transform a group of them at once, etc.)
 * Fast average distance-based shorting, optional Z-buffer
 * Very basic lighting system (ambiance, directional and point light sources)
 * "Collision" detectiton, line and triangle cutting appropriately (for example if a line goes through a filled triangle, the line should be cut to 2 pieces)

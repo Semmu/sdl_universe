@@ -135,12 +135,12 @@ int main( int argc, char* args[] )
 
 	SU::Object second = SU::Object();
 	second.model = &cube;
-	second.position = SU::Vector(2, 1, 0);
+	second.position = SU::Vector(1, 0.5, 0);
 
 	second.transforming = true;
-	second.X = SU::Vector(-0.5, 0, 0);
-	second.Y = SU::Vector(0, -0.5, 0);
-	second.Z = SU::Vector(0, 0, 0.5);
+	second.X = SU::Vector(-0.25, 0, 0);
+	second.Y = SU::Vector(0, -0.25, 0);
+	second.Z = SU::Vector(0, 0, 0.25);
 
 	aobject.addChild(&second);
 
@@ -183,19 +183,13 @@ int main( int argc, char* args[] )
 							running = false;
 						}
 
-						case SDLK_q:
-						{
-							running = false;
-						}
-						break;
-
 						case SDLK_SPACE:
 						{
 							aobject.enabled = !aobject.enabled;
 						}
 						break;
 
-						case SDLK_d:
+						case SDLK_h:
 						{
 							SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
 						}
@@ -215,25 +209,25 @@ int main( int argc, char* args[] )
 
 						case SDLK_DOWN:
 						{
-							SU::Camera::position.y -= 0.1;
+							SU::Camera::position.z -= 0.1;
 						}
 						break;
 
 						case SDLK_UP:
 						{
+							SU::Camera::position.z += 0.1;
+						}
+						break;
+
+						case SDLK_PAGEUP:
+						{
 							SU::Camera::position.y += 0.1;
 						}
 						break;
 
-						case SDLK_s:
+						case SDLK_PAGEDOWN:
 						{
-							SU::Camera::position.z -= 0.1;
-						}
-						break;
-
-						case SDLK_w:
-						{
-							SU::Camera::position.z += 0.1;
+							SU::Camera::position.y -= 0.1;
 						}
 						break;
 
@@ -247,6 +241,42 @@ int main( int argc, char* args[] )
 						{
 							SU::Camera::FOV++;
 						}
+
+						case SDLK_w:
+						{
+							aobject.rotateAroundX(0.1);
+						}
+						break;
+
+						case SDLK_s:
+						{
+							aobject.rotateAroundX(-0.1);
+						}
+						break;
+
+						case SDLK_a:
+						{
+							aobject.rotateAroundY(0.1);
+						}
+						break;
+
+						case SDLK_d:
+						{
+							aobject.rotateAroundY(-0.1);
+						}
+						break;
+
+						case SDLK_q:
+						{
+							aobject.rotateAroundZ(0.1);
+						}
+						break;
+
+						case SDLK_e:
+						{
+							aobject.rotateAroundZ(-0.1);
+						}
+						break;
 
 						default: break;
 					}

@@ -160,6 +160,10 @@ namespace SU
 
 		Object();
 		void addChild(Object* o);
+
+		void rotateAroundX(double angle);
+		void rotateAroundY(double angle);
+		void rotateAroundZ(double angle);
 	};
 
 
