@@ -1,6 +1,12 @@
 #include "SU.h"
 #include <sstream>
 
+// ==================================================================================
+//
+// 		SMALL HELPER FUNCTION IMPLEMENTATIONS
+//
+// ==================================================================================
+
 double randDouble(double max) { return double(rand()) / RAND_MAX * max; }
 
 double deg2rad(double d) { return d / 180 * M_PI; }
@@ -115,21 +121,29 @@ bool line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
 
 namespace SU
 {
-	// PUBLICLY ACCESSIBLE VARIABLE **DEFINITIONS** BELONG HERE
-	// so only value assignments. they should be "mentioned" in the header as well
+	// ==============================================================================
+	//
+	// 		PUBLICLY ACCESSIBLE VARIABLE DEFINITIONS
+	//
+	// ==============================================================================
 
 	int bgColor = 0;
 	double clipNear = 1.0, clipFar = 100.0;
 	int FOV = 60;
-	int flags;
+	int flags = 0;
 
 
 
+
+
+	// ==============================================================================
+	//
+	// 		PRIVATE VARIABLE DECLARATIONS AND DEFINITIONS
+	//
+	// ==============================================================================
 
 	namespace
 	{
-		// PRIVATE THINGS BELONG HERE
-
 		SDL_Surface* surface;
 		int width, height;
 
@@ -138,6 +152,14 @@ namespace SU
 	}
 
 
+
+
+
+	// ==============================================================================
+	//
+	// 		CUSTOM TYPE AND CLASS IMPLEMENTATIONS
+	//
+	// ==============================================================================
 
 	double Vector::getLength() const
 	{
@@ -342,14 +364,13 @@ namespace SU
 	Triangle::~Triangle() {}
 
 
+
 	void Model::add(Primitive* p)
 	{
 		contents.push_back(p);
 	}
 
 
-	// Object::objects is static
-	std::list<Object*> Object::objects;
 
 	Object::Object() : enabled(true), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
 	{
@@ -363,6 +384,14 @@ namespace SU
 	}
 
 
+
+
+
+	// ==============================================================================
+	//
+	// 		PUBLICLY ACCESSIBLE METHOD IMPLEMENTATIONS
+	//
+	// ==============================================================================
 
 	bool init(SDL_Surface* s, int f)
 	{
@@ -433,7 +462,7 @@ namespace SU
 		SDL_Point p;
 
 		// FIXME: something is wrong with FOV, should get a verification
-		double left = clipNear / sin(deg2rad(90 - FOV / 2)) * sin(deg2rad(FOV / 2));
+		double left = clipNear / sin(deg2rad(90 - FOV)) * sin(deg2rad(FOV));
 		// this line was:
 		// double left = clipNear / sin(deg2rad(FOV / 2)) * sin(deg2rad(90 - FOV / 2));
 
@@ -576,6 +605,8 @@ namespace SU
 			}
 		}
 
+		for(Primitive* p : primitivesToRender)
+			delete p;
 		primitivesToRender.clear();
 	}
 }

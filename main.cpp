@@ -44,8 +44,10 @@ public:
 	Floating()
 	{
 		direction = SU::Vector(randDouble(), randDouble(), randDouble()).getNormalized();
-		destination = SU::Vector(randDouble(50.0) - 25.0, randDouble(10.0) - 5.0, randDouble(25) + 1);
-		obj.position = SU::Vector(randDouble(50.0) - 25.0, randDouble(10.0) - 5.0, randDouble(25) + 1);
+
+		newDestination();
+		obj.position = destination;
+		newDestination();
 
 		obj.model = &cube;
 
@@ -55,6 +57,11 @@ public:
 		obj.Z = SU::Vector(randDouble(1) - 0.5, randDouble(1) - 0.5, 1).getNormalized();
 
 		all.push_back(this);
+	}
+
+	void newDestination()
+	{
+		destination = SU::Vector(randDouble(50.0) - 25.0, randDouble(20.0) - 10.0, randDouble(25) + 1);
 	}
 };
 std::list<Floating*> Floating::all;
@@ -92,6 +99,9 @@ int main( int argc, char* args[] )
 
 	SU::init(surface, SU::Flags::DEBUG_TRANSFORMATIONS);
 
+	SU::clipNear = 0.86602540378;
+	SU::FOV = 60;
+
 
 	TTF_Font *font = TTF_OpenFont("./Deltoid-sans.ttf", 32);
 	if (font == NULL)
@@ -102,29 +112,29 @@ int main( int argc, char* args[] )
 
 
 
-	cube.add(new SU::Line(0.5, 0, 0.5,		0.5, 0.5, 0));
-	cube.add(new SU::Line(0.5, 0, 0.5,		0, 0.5, 0.5));
-	cube.add(new SU::Line(0.5, 0, 0.5,		0.5, 0.5, 1));
-	cube.add(new SU::Line(0.5, 0, 0.5,		1, 0.5, 0.5));
+	cube.add(new SU::Line(0, -0.5, 0,		0.5, 0, 0));
+	cube.add(new SU::Line(0, -0.5, 0,		-0.5, 0, 0));
+	cube.add(new SU::Line(0, -0.5, 0,		0, 0, 0.5));
+	cube.add(new SU::Line(0, -0.5, 0,		0, 0, -0.5));
 
-	cube.add(new SU::Line(0.5, 1, 0.5,		0.5, 0.5, 0));
-	cube.add(new SU::Line(0.5, 1, 0.5,		0, 0.5, 0.5));
-	cube.add(new SU::Line(0.5, 1, 0.5,		0.5, 0.5, 1));
-	cube.add(new SU::Line(0.5, 1, 0.5,		1, 0.5, 0.5));
+	cube.add(new SU::Line(-0.5, 0, 0,		0, 0, -0.5));
+	cube.add(new SU::Line(-0.5, 0, 0,		0, 0, +0.5));
+	cube.add(new SU::Line(0.5, 0, 0,		0, 0, -0.5));
+	cube.add(new SU::Line(0.5, 0, 0,		0, 0, +0.5));
 
-	cube.add(new SU::Line(0.5, 0.5, 0,		0, 0.5, 0.5));
-	cube.add(new SU::Line(0.5, 0.5, 0,		1, 0.5, 0.5));
-	cube.add(new SU::Line(0.5, 0.5, 1,		0, 0.5, 0.5));
-	cube.add(new SU::Line(0.5, 0.5, 1,		1, 0.5, 0.5));
+	cube.add(new SU::Line(0, 0.5, 0,		0.5, 0, 0));
+	cube.add(new SU::Line(0, 0.5, 0,		-0.5, 0, 0));
+	cube.add(new SU::Line(0, 0.5, 0,		0, 0, 0.5));
+	cube.add(new SU::Line(0, 0.5, 0,		0, 0, -0.5));
 
 
-	SU::Object aobject;
+/*	SU::Object aobject;
 	aobject.model = &cube;
-	aobject.position = SU::Vector(-0.5, -0.5, 1);
+	aobject.position = SU::Vector(-0.5, -0.5, 0);
 
 	aobject.transforming = true;
-	aobject.X = SU::Vector(1, 0.25, 0);
-	aobject.Y = SU::Vector(-0.25, 1, 0);
+//	aobject.X = SU::Vector(1, 0.25, 0);
+//	aobject.Y = SU::Vector(-0.25, 1, 0);
 
 	SU::Object second = SU::Object();
 	second.model = &cube;
@@ -133,14 +143,22 @@ int main( int argc, char* args[] )
 	second.transforming = true;
 	second.X = SU::Vector(-0.5, 0, 0);
 	second.Y = SU::Vector(0, -0.5, 0);
-	second.Z = SU::Vector(0, 0, 0.5);
+	second.Z = SU::Vector(0, 0, 0.5);*/
 
-	aobject.addChild(&second);
+//	aobject.addChild(&second);
 
-	for (int i = 0; i < 30; i++)
+	for (int i = 0; i < 300; i++)
 	{
-		//new Floating();
+		new Floating();
 	}
+
+	SU::Object aobject;
+	aobject.model = &cube;
+	aobject.position = SU::Vector(-0.5, 0, 0);
+	aobject.transforming = true;
+	aobject.X /= 4;
+	aobject.Y /= 4;
+	aobject.Z /= 4;
 
 
 
@@ -260,7 +278,7 @@ int main( int argc, char* args[] )
 			f->obj.position += f->direction * 0.01;
 
 			if ((f->destination - f->obj.position).getLength() < 1)
-				f->destination = SU::Vector(randDouble(10.0) - 5.0, randDouble(10.0) - 5.0, randDouble(25) + 1);
+				f->newDestination();
 		}
 
 		SU::render();
@@ -289,7 +307,7 @@ int main( int argc, char* args[] )
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 
-		SDL_Delay(10);
+		SDL_Delay(1);
 	}
 
 	SDL_DestroyWindow(window);

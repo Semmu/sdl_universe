@@ -4,6 +4,11 @@
 
 #define WHITE 0xffffffff
 
+// ==================================================================================
+//
+// 		SMALL HELPER FUNCTION DECLARATIONS
+//
+// ==================================================================================
 
 double randDouble(double max = 1.0);
 
@@ -12,27 +17,11 @@ double rad2deg(double r);
 
 namespace SU
 {
-	// PUBLICLY ACCESSIBLE VARIABLES BELONG HERE
-
-	enum Flags
-	{
-		DEBUG_WIREFRAMING,
-		DEBUG_TRANSFORMATIONS
-//		GLOBAL_LIGHT,
-//		LOCAL_LIGHTS,
-//		BIG_CHUNK_SPLITTING,
-//		COLLISION_SPLITTING,
-//		FAST_DEPTH_SORT,
-//		Z_BUFFER_SORT
-	};
-
-	extern int bgColor;
-	extern double clipNear, clipFar;
-	extern int FOV;
-	extern int flags;
-
-
-
+	// ==============================================================================
+	//
+	// 		CUSTOM TYPE AND CLASS DECLARATIONS
+	//
+	// ==============================================================================
 
 	class Vector
 	{
@@ -155,8 +144,6 @@ namespace SU
 	class Object
 	{
 	public:
-		static std::list<Object*> objects;
-
 		bool enabled;
 
 		Model* model;
@@ -178,6 +165,39 @@ namespace SU
 
 
 
+
+	// ==============================================================================
+	//
+	// 		PUBLICLY ACCESSIBLE VARIABLE DECLARATIONS
+	//
+	// ==============================================================================
+
+	enum Flags
+	{
+		DEBUG_WIREFRAMING,
+		DEBUG_TRANSFORMATIONS
+//		GLOBAL_LIGHT,
+//		LOCAL_LIGHTS,
+//		BIG_CHUNK_SPLITTING,
+//		COLLISION_SPLITTING,
+//		FAST_DEPTH_SORT,
+//		Z_BUFFER_SORT
+	};
+
+	extern int bgColor;
+	extern double clipNear, clipFar;
+	extern int FOV;
+	extern int flags;
+
+
+
+
+
+	// ==============================================================================
+	//
+	// 		PUBLICLY ACCESSIBLE METHOD DECLARATIONS
+	//
+	// ==============================================================================
 
 	bool init(SDL_Surface* surface, int f = 0);
 
