@@ -104,7 +104,9 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 int main( int argc, char* args[] )
 {
-	int count = 0;
+	int currentSec = 0;
+	int currentSecFPS = 0;
+	int previousSecFPS = 0;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	if(TTF_Init() == -1)
@@ -380,18 +382,25 @@ int main( int argc, char* args[] )
 
 		SU::render();
 
+		if (SDL_GetTicks() / 1000 != currentSec)
+		{
+			currentSec++;
+			previousSecFPS = currentSecFPS;
+			currentSecFPS = 0;
+		}
+		currentSecFPS++;
+
 		SDL_Color c = {128, 128, 128};
 		std::stringstream fps;
 		// this FPS counter display the total average, not the current
 		// will be changed
-		fps << " " << int(1000.0 / (double(SDL_GetTicks()) / count)) << " Camera::FOV=" << SU::Camera::FOV;
+		fps << " " << previousSecFPS << " FPS ; FOV=" << SU::Camera::FOV;
 		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
 		if (text == NULL)
 			DIE(TTF_GetError());
 
 		SDL_BlitSurface(text, NULL, surface, NULL);
 
-		count++;
 
 
 
