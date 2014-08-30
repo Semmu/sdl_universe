@@ -194,12 +194,12 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		//new Floating();
+		new Floating();
 	}
 	bool move = false;
 
 
-	SU::Camera::position = SU::Vector(0, 0, -30);
+	SU::Camera::position = SU::Vector(1, 0, -20);
 
 
 	while (running)

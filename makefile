@@ -18,10 +18,12 @@ OBJ_NAME = sdl_universe
 default: sdl2
 
 sdl2: $(OBJS)
+	@echo "Building with SDL2"
 	$(CC) $(OBJS) $(COMPILER_FLAGS2) $(LINKER_FLAGS2) -o $(OBJ_NAME)
 	./$(OBJ_NAME)
 
 sdl1: $(OBJS)
+	@echo "Building with SDL1.2"
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
 	./$(OBJ_NAME)
 

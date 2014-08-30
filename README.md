@@ -76,6 +76,7 @@ Frames per second:
 	* moving: 45-46
 
 Yet there is a strange problem with SDL1. The "occlusion culling" is not working correctly, it does not render things that are in front of the camera, but go out of the visible space. But this has nothing to do with SDL itself, so I don't really know what's going on.
+Update: now I know that the line drawing algorithm is the bad part, it does not work correctly with negative positions. I rewrote them, and now it's working.
 
 
 Licence

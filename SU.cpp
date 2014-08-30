@@ -14,54 +14,69 @@ double randDouble(double max) { return double(rand()) / RAND_MAX * max; }
 double deg2rad(double d) { return d / 180 * M_PI; }
 double rad2deg(double r) { return r / M_PI * 180; }
 
-bool point(SDL_Surface* dst, int x1, int y1, int color)
+void putpixel_nolock(SDL_Surface* s, int x, int y, int color)
 {
-	SDL_Rect r;
-	r.w = r.h = 1;
-	r.x = x1;
-	r.y = y1;
+	if (x < 0 || x >= s->w || y < 0 || y >= s->h)
+		return;
 
-	SDL_FillRect(dst, &r, color);
-
-	return true;
+	Uint32 *pixels = (Uint32 *)s->pixels;
+	pixels[ ( y * s->w ) + x ] = color;
 }
-bool point(SDL_Surface* dst, SDL_Point p, int c)
+void putpixel_nolock(SDL_Surface* s, SDL_Point p, int c)
+{
+	putpixel_nolock(s, p.x, p.y, c);
+}
+
+void putpixel(SDL_Surface* s, int x, int y, int color)
+{
+	if (SDL_MUSTLOCK(s))
+		SDL_LockSurface(s);
+
+	putpixel_nolock(s, x, y, color);
+
+	if (SDL_MUSTLOCK(s))
+		SDL_UnlockSurface(s);
+}
+
+
+void point(SDL_Surface* dst, int x1, int y1, int color)
+{
+	putpixel(dst, x1, y1, color);
+}
+void point(SDL_Surface* dst, SDL_Point p, int c)
 {
 	return point(dst, p.x, p.y, c);
 }
 
-bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
+void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 {
 	// TODO: lock surface pixels and manually access them
 
-	SDL_Rect rect;
-	rect.h = 1;
-	rect.w = 1;
+	if (SDL_MUSTLOCK(dst))
+		SDL_LockSurface(dst);
+
+	SDL_Point p;
 
 	if (x1 == x2)
 	{
-		rect.x = x1;
+		p.x = x1;
 
 		for (int c = (y1 > y2 ? y2 : y1); c < (y1 > y2 ? y1 : y2) + 1; c++)
 		{
-			rect.y = c;
-			SDL_FillRect(dst, &rect, color);
+			p.y = c;
+			putpixel_nolock(dst, p, color);
 		}
-
-		return true;
 	}
 
 	if (y1 == y2)
 	{
-		rect.y = y1;
+		p.y = y1;
 
 		for (int c = (x1 > x2 ? x2 : x1); c < (x1 > x2 ? x1 : x2) + 1; c++)
 		{
-			rect.x = c;
-			SDL_FillRect(dst, &rect, color);
+			p.x = c;
+			putpixel_nolock(dst, p, color);
 		}
-
-		return true;
 	}
 
 
@@ -85,12 +100,10 @@ bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 
 		for (int c = x1 ; c < x2 ; c++)
 		{
-			rect.x = c;
-			rect.y = y1 - meredekseg * (c - x1);
-			SDL_FillRect(dst, &rect, color);
+			p.x = c;
+			p.y = y1 - meredekseg * (c - x1);
+			putpixel_nolock(dst, p, color);
 		}
-
-		return true;
 	}
 	else
 	{
@@ -108,17 +121,18 @@ bool line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 
 		for (int c = y1 ; c < y2 ; c++)
 		{
-			rect.y = c;
-			rect.x = x1 - 1 / meredekseg * (c - y1);
-			SDL_FillRect(dst, &rect, color);
+			p.y = c;
+			p.x = x1 - 1 / meredekseg * (c - y1);
+			putpixel_nolock(dst, p, color);
 		}
-
-		return true;
 	}
+
+	if (SDL_MUSTLOCK(dst))
+		SDL_UnlockSurface(dst);
 }
-bool line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
+void line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
 {
-	return line(dst, p1.x, p1.y, p2.x, p2.y, c);
+	line(dst, p1.x, p1.y, p2.x, p2.y, c);
 }
 
 bool sortPrimitivesNearToFar(const SU::Primitive* p1, const SU::Primitive* p2)
