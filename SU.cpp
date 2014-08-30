@@ -137,7 +137,7 @@ namespace SU
 	{
 		int FOV = 60;
 
-		double viewDistanceMin = 1.0,
+		double viewDistanceMin = 0.1,
 			   viewDistanceMax = 100.0;
 
 		Vector position = Vector(0, 0, 0),
@@ -180,6 +180,9 @@ namespace SU
 
 		std::list<Object*> everyObject;
 		std::list<Primitive*> primitivesToRender;
+
+		Plane cameraPlane;
+		Vector cameraPlaneWidth, cameraPlaneHeight, cameraPlaneBottomLeft;
 	}
 
 
@@ -561,8 +564,7 @@ namespace SU
 
 	bool isOnScreen(const Vector& v)
 	{
-		// FIXME: this does not behave as it should. really not.
-		return ((v - Camera::position) ^ Camera::lookDirection) < M_PI / 2 - 0.01;
+		return cameraPlane.distanceFrom(v) > 0;
 	}
 
 	bool isOnScreen(const Primitive* p)
@@ -590,31 +592,17 @@ namespace SU
 
 	SDL_Point positionOnScreen(const Vector& v)
 	{
+		Line lineToVector = Line(Camera::position, v - Camera::position);
+		Vector positionOnPlane = cameraPlane.getIntersection(lineToVector);
+		Vector fromBottomLeftToPositionOnPlane = positionOnPlane - cameraPlaneBottomLeft;
+
+		double angleToWidth = cameraPlaneWidth.angleTo(fromBottomLeftToPositionOnPlane);
+		double angleToHeight = cameraPlaneHeight.angleTo(fromBottomLeftToPositionOnPlane);
 
 		SDL_Point p;
 
-		// FIXME: something is wrong with FOV, should get a verification
-		double left = Camera::viewDistanceMin / sin(deg2rad(90 - Camera::FOV / 2)) * sin(deg2rad(Camera::FOV / 2));
-		// this line was:
-		// double left = Camera::viewDistanceMin / sin(deg2rad(Camera::FOV / 2)) * sin(deg2rad(90 - Camera::FOV / 2));
-
-
-		double up = left / width * height;
-
-		Vector leftVector(-left, 0, 0);
-		Vector rightVector(left, 0, 0);
-		Vector upVector(0, up, 0);
-		Vector downVector(0, -up, 0);
-
-		Vector vectorToPointOnScreen;
-
-		vectorToPointOnScreen.x = v.x * Camera::viewDistanceMin / v.z;
-		vectorToPointOnScreen.y = v.y * Camera::viewDistanceMin / v.z;
-
-		Vector vectorToPointFromCorner = vectorToPointOnScreen + rightVector + downVector;
-
-		p.x = vectorToPointFromCorner.x / (2 * left) * width;
-		p.y = -vectorToPointFromCorner.y / (2 * up) * height;
+		p.x = cos(angleToWidth) * fromBottomLeftToPositionOnPlane.getLength() / cameraPlaneWidth.getLength() * width;
+		p.y = height - (cos(angleToHeight) * fromBottomLeftToPositionOnPlane.getLength() / cameraPlaneHeight.getLength() * height);
 
 		return p;
 	}
@@ -625,7 +613,7 @@ namespace SU
 		{
 			// this is a root Object
 
-			o->resultantPosition = o->position - Camera::position;
+			o->resultantPosition = o->position;
 
 			o->resultantX = o->X;
 			o->resultantY = o->Y;
@@ -723,6 +711,22 @@ namespace SU
 
 		SDL_FillRect(surface, NULL, bgColor);
 
+
+		/*
+		 *
+		 *	INITIALIZING THE CAMERA PLANES AND VECTORS
+		 *
+		 */
+
+		 cameraPlane = Plane(Camera::position + Camera::lookDirection.getNormalized() * Camera::viewDistanceMin, Camera::lookDirection);
+
+		 cameraPlaneWidth = Camera::rightDirection.getNormalized() *
+		 					(sin(deg2rad(Camera::FOV/2)) / sin(deg2rad(90 - Camera::FOV/2))) * Camera::viewDistanceMin * 2;
+
+		 cameraPlaneHeight = Camera::upDirection.getNormalized() *
+		 					 cameraPlaneWidth.getLength() / width * height;
+
+		 cameraPlaneBottomLeft = cameraPlane.position - (cameraPlaneWidth / 2) - (cameraPlaneHeight / 2);
 
 		/*
 		 *

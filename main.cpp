@@ -10,8 +10,18 @@
 #include "SU.h"
 
 
-#define WIDTH 1600
-#define HEIGHT 800
+#if 0
+	#define WIDTH 1920
+	#define HEIGHT 1080
+	#define FLAGS SDL_WINDOW_FULLSCREEN_DESKTOP
+#else
+	#define WIDTH 1600
+	#define HEIGHT 800
+	#define FLAGS SDL_WINDOW_SHOWN
+#endif
+
+const double CAMERA_ROTATION_AMOUNT = 0.02;
+const double CAMERA_MOVEMENT_AMOUNT = 0.07;
 
 void DIE(const char* reason)
 {
@@ -80,8 +90,6 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 int main( int argc, char* args[] )
 {
-	std::cout << (SU::Vector(0, 1, 0).crossProduct(SU::Vector(0, 0, 1))) << std::endl;
-
 	int count = 0;
 
 	SDL_Init(SDL_INIT_VIDEO);
@@ -97,7 +105,7 @@ int main( int argc, char* args[] )
 
 	bool running = true;
 
-	SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, SDL_WINDOW_SHOWN, &window, &renderer);
+	SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, FLAGS, &window, &renderer);
 
 	texture = SDL_CreateTexture(renderer,
 							   SDL_PIXELFORMAT_ARGB8888,
@@ -141,9 +149,9 @@ int main( int argc, char* args[] )
 	SU::Object center;
 	center.model = &cube;
 	center.transforming = true;
-	center.X = SU::Vector(0.2, 0, 0);
-	center.Y = SU::Vector(0, 0.2, 0);
-	center.Z = SU::Vector(0, 0, 0.2);
+	center.X = SU::Vector(0.1, 0, 0);
+	center.Y = SU::Vector(0, 0.1, 0);
+	center.Z = SU::Vector(0, 0, 0.1);
 
 	SU::Object aobject;
 	aobject.model = &cube;
@@ -166,7 +174,7 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		//new Floating();
+		new Floating();
 	}
 	bool move = false;
 
@@ -228,37 +236,37 @@ int main( int argc, char* args[] )
 
 				case SDLK_LEFT:
 				{
-					SU::Camera::position.x -= 0.1;
+					SU::Camera::position -= SU::Camera::rightDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
 				case SDLK_RIGHT:
 				{
-					SU::Camera::position.x += 0.1;
+					SU::Camera::position += SU::Camera::rightDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
 				case SDLK_DOWN:
 				{
-					SU::Camera::position.z -= 0.1;
+					SU::Camera::position -= SU::Camera::lookDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
 				case SDLK_UP:
 				{
-					SU::Camera::position.z += 0.1;
+					SU::Camera::position += SU::Camera::lookDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
 				case SDLK_PAGEUP:
 				{
-					SU::Camera::position.y += 0.1;
+					SU::Camera::position += SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
 				case SDLK_PAGEDOWN:
 				{
-					SU::Camera::position.y -= 0.1;
+					SU::Camera::position -= SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
@@ -311,11 +319,27 @@ int main( int argc, char* args[] )
 				break;
 
 				case SDLK_w:
-					SU::Camera::pitch(0.01);
+					SU::Camera::pitch(CAMERA_ROTATION_AMOUNT);
 				break;
 
 				case SDLK_s:
-					SU::Camera::pitch(-0.01);
+					SU::Camera::pitch(-CAMERA_ROTATION_AMOUNT);
+				break;
+
+				case SDLK_a:
+					SU::Camera::yaw(-CAMERA_ROTATION_AMOUNT);
+				break;
+
+				case SDLK_d:
+					SU::Camera::yaw(CAMERA_ROTATION_AMOUNT);
+				break;
+
+				case SDLK_q:
+					SU::Camera::roll(CAMERA_ROTATION_AMOUNT);
+				break;
+
+				case SDLK_e:
+					SU::Camera::roll(-CAMERA_ROTATION_AMOUNT);
 				break;
 
 				default: break;
