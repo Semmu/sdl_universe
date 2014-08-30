@@ -81,7 +81,7 @@ public:
 
 	void newDestination()
 	{
-		destination = SU::Vector(randDouble(50.0) - 25.0, randDouble(20.0) - 10.0, randDouble(25) + 1);
+		destination = SU::Vector(randDouble(30.0) - 15.0, randDouble(20.0) - 10.0, randDouble(10) + 1);
 	}
 
 	void move()
@@ -199,7 +199,7 @@ int main( int argc, char* args[] )
 	bool move = false;
 
 
-	SU::Camera::position = SU::Vector(0, 0, -10);
+	SU::Camera::position = SU::Vector(0, 0, -30);
 
 
 	while (running)

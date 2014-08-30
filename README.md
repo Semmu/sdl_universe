@@ -43,20 +43,39 @@ What is done
 * Can bundle primitives in a SU::Model and render them (well, triangle drawing isn't implemented yet)
 * Can create tree-like SU::Object hierarchy
 * Transformations work and inherit properly
+* Camera management is fully implemented
 
 
 
 Notes and known bugs
------
+--------------------
 
 * The way to display an SDL_Surface with SDL2 is a bit complicated. You need an SDL_Window, an SDL_Renderer for that window, an SDL_Texture to render, and finally an SDL_Surface to create the texture from.
 	It seems that the process of this takes up 9ms on my machine, no matter if I draw 1 single line on a surface or a hundred. I should find a faster way to display a single SDL_Surface in the window.
 
 	* Probably SDL_UpdateTexture() is what slows down the process, from 3ms to 10ms latency.
+	* SDL1 port added, it is faster, see below
 
-* When something is too close to the projection plane (which is a plane of z=0), the program will freeze when that thing tries to go behind it. Temporary workaround in instanceIsVectorOnScreen(), because it compares to 0.01 not 0.
+* When something is too close to the projection plane or is behind it, the program will freeze or stutter.
 * Only the triangles facing the eye should be rendered. Don't forget to implement this.
 * The current implementation is **not** idiot-proof, use everything as intended. Variable and function names are pretty straightforward, but if something does not work, feel free to ask.
+
+
+SDL1 vs. SDL2
+-------------
+
+The library can be compiled with SDL1 or SDL2, because it is only using SDL_Surface, which is the same in both SDL versions.
+But I think SDL1 is better, because it is simpler (there is no separate renderer, texture, etc.). The benchmarks also tell the same:
+
+Frames per second:
+* With SDL1:
+	* idle: 51-52
+	* moving: 51-52
+* With SDL2:
+	* idle: 45-46
+	* moving: 45-46
+
+Yet there is a strange problem with SDL1. The "occlusion culling" is not working correctly, it does not render things that are in front of the camera, but go out of the visible space. But this has nothing to do with SDL itself, so I don't really know what's going on.
 
 
 Licence
