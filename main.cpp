@@ -194,7 +194,7 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		new Floating();
+		//new Floating();
 	}
 	bool move = false;
 
@@ -394,7 +394,7 @@ int main( int argc, char* args[] )
 		std::stringstream fps;
 		// this FPS counter display the total average, not the current
 		// will be changed
-		fps << " " << previousSecFPS << " FPS ; FOV=" << SU::Camera::FOV;
+		fps << " " << previousSecFPS << " FPS     " << SU::primitivesRendered;
 		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
 		if (text == NULL)
 			DIE(TTF_GetError());

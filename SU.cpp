@@ -166,6 +166,8 @@ namespace SU
 	int bgColor = 0;
 	int flags = 0;
 
+	// FIXME: this is temporary
+	int primitivesRendered = 0;
 
 
 	// ==============================================================================
@@ -711,6 +713,7 @@ namespace SU
 
 
 		SDL_FillRect(surface, NULL, bgColor);
+		primitivesRendered = 0;
 
 
 		/*
@@ -765,6 +768,8 @@ namespace SU
 		{
 			if (isOnScreen(p))
 			{
+				primitivesRendered++;
+
 				switch (p->getType())
 				{
 					case SU::Primitive::Type::POINT:

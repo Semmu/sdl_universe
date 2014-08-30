@@ -247,6 +247,8 @@ namespace SU
 	extern int bgColor;
 	extern int flags;
 
+	// FIXME: this is temporary
+	extern int primitivesRendered;
 
 	// ==============================================================================
 	//
