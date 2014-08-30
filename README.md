@@ -40,6 +40,7 @@ Planned or already implemented features
 
 What is done
 ------------
+
 * Can bundle primitives in a SU::Model and render them (well, triangle drawing isn't implemented yet)
 * Can create tree-like SU::Object hierarchy
 * Transformations work and inherit properly
@@ -61,22 +62,14 @@ Notes and known bugs
 * The current implementation is **not** idiot-proof, use everything as intended. Variable and function names are pretty straightforward, but if something does not work, feel free to ask.
 
 
+
 SDL1 vs. SDL2
 -------------
 
 The library can be compiled with SDL1 or SDL2, because it is only using SDL_Surface, which is the same in both SDL versions.
-But I think SDL1 is better, because it is simpler (there is no separate renderer, texture, etc.). The benchmarks also tell the same:
+But I think SDL1 is better, because it is simpler (there is no separate renderer, texture, etc.) and is also like 10% faster (according to FPS benchmarks).
+There is going to be a more detailed benchmarking after the library is mostly finished.
 
-Frames per second:
-* With SDL1:
-	* idle: 51-52
-	* moving: 51-52
-* With SDL2:
-	* idle: 45-46
-	* moving: 45-46
-
-Yet there is a strange problem with SDL1. The "occlusion culling" is not working correctly, it does not render things that are in front of the camera, but go out of the visible space. But this has nothing to do with SDL itself, so I don't really know what's going on.
-Update: now I know that the line drawing algorithm is the bad part, it does not work correctly with negative positions. I rewrote them, and now it's working.
 
 
 Licence
