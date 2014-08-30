@@ -68,6 +68,8 @@ namespace SU
 
 		Vector rotated(const Vector& axis, const double angle) const;
 
+		Vector transform(const Vector& x, const Vector& y, const Vector& z, const Vector& p = Vector(0, 0, 0)) const;
+
 		std::string toString() const;
 		friend std::ostream& operator<<(std::ostream& os, const Vector& v);
 	};

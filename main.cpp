@@ -138,9 +138,16 @@ int main( int argc, char* args[] )
 	cube.add(new SU::Segment(0, 0.5, 0,		0, 0, -0.5));
 
 
+	SU::Object center;
+	center.model = &cube;
+	center.transforming = true;
+	center.X = SU::Vector(0.2, 0, 0);
+	center.Y = SU::Vector(0, 0.2, 0);
+	center.Z = SU::Vector(0, 0, 0.2);
+
 	SU::Object aobject;
 	aobject.model = &cube;
-	aobject.position = SU::Vector(-0.5, -0.5, 1.5);
+	aobject.position = SU::Vector(0.5, -0.5, 1.5);
 
 	aobject.transforming = true;
 	aobject.X = SU::Vector(1, 0.25, 0);
@@ -159,7 +166,7 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		new Floating();
+		//new Floating();
 	}
 	bool move = false;
 

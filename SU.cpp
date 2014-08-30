@@ -313,6 +313,14 @@ namespace SU
 		return result;
 	}
 
+
+	Vector Vector::transform(const Vector& xx, const Vector& yy, const Vector& zz, const Vector& pp) const
+	{
+		return Vector(x * xx.x + y * yy.x + z * zz.x + pp.x,
+					  x * xx.y + y * yy.y + z * zz.y + pp.y,
+					  x * xx.z + y * yy.z + z * zz.z + pp.z);
+	}
+
 	std::string Vector::toString() const
 	{
 		std::stringstream str;
@@ -393,16 +401,6 @@ namespace SU
 
 		// yay!
 		return Vector(x, y, z);
-	}
-
-
-	Vector getTransformed(Vector v, Vector x, Vector y, Vector z)
-	{
-		// TODO: should be Vector::transform(x, y, z, p)
-
-		return Vector(v.x * x.x + v.y * y.x + v.z * z.x,
-					  v.x * x.y + v.y * y.y + v.z * z.y,
-					  v.x * x.z + v.y * y.z + v.z * z.z);
 	}
 
 
@@ -623,22 +621,24 @@ namespace SU
 
 	void processObject(Object* o)
 	{
-		if (o->parent != NULL)
+		if (o->parent == NULL)
 		{
-			o->resultantPosition = o->parent->resultantPosition + getTransformed(o->position, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
-			o->resultantX = getTransformed(o->X, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
-			o->resultantY = getTransformed(o->Y, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
-			o->resultantZ = getTransformed(o->Z, o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
-		}
-		else
-		{
-			// camera position and direction should affect these
+			// this is a root Object
 
-			o->resultantPosition = getTransformed(o->position, o->resultantX, o->resultantY, o->resultantZ) - Camera::position;
+			o->resultantPosition = o->position - Camera::position;
 
 			o->resultantX = o->X;
 			o->resultantY = o->Y;
 			o->resultantZ = o->Z;
+		}
+		else
+		{
+			// this is a child object, resultant vectors should be affected by parents transformation
+
+			o->resultantPosition = o->position.transform(o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ, o->parent->resultantPosition);
+			o->resultantX = o->X.transform(o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
+			o->resultantY = o->Y.transform(o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
+			o->resultantZ = o->Z.transform(o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
 		}
 
 		if (flags & Flags::DEBUG_TRANSFORMATIONS)
@@ -669,7 +669,7 @@ namespace SU
 
 					if (o->transforming)
 					{
-						pt = new SU::Point(getTransformed(static_cast<SU::Point*>(p)->P1, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition, p->color);
+						pt = new SU::Point(static_cast<SU::Point*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition), p->color);
 					}
 					else
 					{
@@ -686,8 +686,8 @@ namespace SU
 
 					if (o->transforming)
 					{
-						l = new SU::Segment(getTransformed(static_cast<SU::Segment*>(p)->P1, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
-										 getTransformed(static_cast<SU::Segment*>(p)->P2, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
+						l = new SU::Segment(static_cast<SU::Segment*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+										 static_cast<SU::Segment*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
 										 p->color);
 					}
 					else
