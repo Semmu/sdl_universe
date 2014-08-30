@@ -1,8 +1,20 @@
 #include <string>
 #include <list>
-#include <SDL2/SDL.h>
+
+#if USING_SDL1
+	#include <SDL/SDL.h>
+#else
+	#include <SDL2/SDL.h>
+#endif
 
 #define WHITE 0xffffffff
+
+#if USING_SDL1
+struct SDL_Point
+{
+	int x, y;
+};
+#endif
 
 // ==================================================================================
 //

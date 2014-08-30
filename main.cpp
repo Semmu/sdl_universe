@@ -4,8 +4,14 @@
 #include <sstream>
 #include <cmath>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+
+#if USING_SDL1
+	#include <SDL/SDL.h>
+	#include <SDL/SDL_ttf.h>
+#else
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_ttf.h>
+#endif
 
 #include "SU.h"
 
@@ -25,10 +31,14 @@ const double CAMERA_MOVEMENT_AMOUNT = 0.07;
 
 void DIE(const char* reason)
 {
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-						 "FATAL ERROR",
-						 reason,
-						 NULL);
+	#if USING_SDL1
+		std::cerr << "[FATAL ERROR]: " << reason;
+	#else
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+							 "FATAL ERROR",
+							 reason,
+							 NULL);
+	#endif
 
 	exit(1);
 }
@@ -86,7 +96,11 @@ public:
 };
 std::list<Floating*> Floating::all;
 
+#if USING_SDL1
+std::list<int> pressed_down_keys;
+#else
 std::list<SDL_Keycode> pressed_down_keys;
+#endif
 
 int main( int argc, char* args[] )
 {
@@ -97,26 +111,30 @@ int main( int argc, char* args[] )
 		DIE(TTF_GetError());
 	atexit(SDL_Quit);
 
-
-	SDL_Window* 	window;
-	SDL_Renderer* 	renderer;
-	SDL_Texture* 	texture;
-	SDL_Surface* 	surface;
-
 	bool running = true;
 
-	SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, FLAGS, &window, &renderer);
 
-	texture = SDL_CreateTexture(renderer,
-							   SDL_PIXELFORMAT_ARGB8888,
-							   SDL_TEXTUREACCESS_STREAMING,
-							   WIDTH, HEIGHT);
+	#if USING_SDL1
+		SDL_Surface *surface = SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_ANYFORMAT);
+	#else
+		SDL_Window* 	window;
+		SDL_Renderer* 	renderer;
+		SDL_Texture* 	texture;
+		SDL_Surface* 	surface;
 
-	surface = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32,
-										0x00FF0000,
-										0x0000FF00,
-										0x000000FF,
-										0xFF000000);
+		SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, FLAGS, &window, &renderer);
+
+		texture = SDL_CreateTexture(renderer,
+								   SDL_PIXELFORMAT_ARGB8888,
+								   SDL_TEXTUREACCESS_STREAMING,
+								   WIDTH, HEIGHT);
+
+		surface = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32,
+											0x00FF0000,
+											0x0000FF00,
+											0x000000FF,
+											0xFF000000);
+	#endif
 
 	SU::init(surface, SU::Flags::DEBUG_TRANSFORMATIONS);
 
@@ -204,7 +222,11 @@ int main( int argc, char* args[] )
 
 				case SDL_KEYDOWN:
 				{
+					#if USING_SDL1
+					if (true)
+					#else
 					if (e.key.repeat == 0)
+					#endif
 					{
 						if (e.key.keysym.sym == SDLK_SPACE)
 							move = !move;
@@ -218,7 +240,11 @@ int main( int argc, char* args[] )
 			}
 		}
 
+		#if USING_SDL1
+		for(int k : pressed_down_keys)
+		#else
 		for(SDL_Keycode k : pressed_down_keys)
+		#endif
 		{
 			switch(k)
 			{
@@ -369,20 +395,21 @@ int main( int argc, char* args[] )
 
 
 
-		// TODO:
-		// which is faster? this method or SDL_CreateSoftwareRenderer?
-		// or CreateTextureFromSurface() ???
-		SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
-		SDL_FreeSurface(text);
+		#if USING_SDL1
+			SDL_Flip(surface);
+		#else
+			// TODO:
+			// which is faster? this method or SDL_CreateSoftwareRenderer?
+			// or CreateTextureFromSurface() ???
+			SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
+			SDL_FreeSurface(text);
 
-		SDL_RenderCopy(renderer, texture, NULL, NULL);
-		SDL_RenderPresent(renderer);
+			SDL_RenderCopy(renderer, texture, NULL, NULL);
+			SDL_RenderPresent(renderer);
+		#endif
 
 		SDL_Delay(10);
 	}
-
-	SDL_DestroyWindow(window);
-	SDL_Quit();
 
 	return 0;
 }

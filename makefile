@@ -5,10 +5,10 @@ OBJS = main.cpp SU.cpp
 CC = g++
 
 # compile flags
-COMPILER_FLAGS = -Wall -std=c++11 `sdl2-config --cflags`
+COMPILER_FLAGS = -Wall -std=c++11 `sdl-config --cflags` -DUSING_SDL1
 
 # what to link
-LINKER_FLAGS = `sdl2-config --libs` -lSDL2_ttf
+LINKER_FLAGS = `sdl-config --libs` -lSDL_ttf
 
 # output name
 OBJ_NAME = sdl_universe
