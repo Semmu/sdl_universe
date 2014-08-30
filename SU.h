@@ -27,7 +27,7 @@ namespace SU
 	{
 	public:
 		double x, y, z;
-		Vector(double xx = 0, double yy = 0, double zz = 0) : x(xx), y(yy), z(zz) {}
+		Vector(double xx = 0, double yy = 0, double zz = 0);
 
 		double getLength() const;
 		void setLength(const double l);
@@ -72,12 +72,36 @@ namespace SU
 		friend std::ostream& operator<<(std::ostream& os, const Vector& v);
 	};
 
+	class Line
+	{
+	public:
+		Vector position, direction;
+
+		Line(Vector pos = Vector(0, 0, 0), Vector dir = Vector(1, 1, 1));
+
+		double distanceFrom(const Vector& v) const;
+		double distanceFrom(const Line& l) const;
+	};
+
+	class Plane
+	{
+	public:
+		Vector position, direction;
+
+		Plane(Vector pos = Vector(0, 0, 0), Vector dir = Vector(0, 0, 1));
+
+		double distanceFrom(const Vector& v) const;
+
+		bool doesIntersect(const Line& l) const;
+		Vector getIntersection(const Line& l) const;
+	};
+
 	class Primitive
 	{
 	public:
 		enum Type
 		{
-			NONE, POINT, LINE, TRIANGLE
+			NONE, POINT, SEGMENT, TRIANGLE
 		};
 		int color;
 
@@ -103,18 +127,18 @@ namespace SU
 		~Point();
 	};
 
-	class Line : public Primitive
+	class Segment : public Primitive
 	{
 	public:
 		Vector P1, P2;
 
-		Line(Vector p1, Vector p2, int c = WHITE);
-		Line(double x1, double y1, double z1, double x2, double y2, double z2, int c = WHITE);
+		Segment(Vector p1, Vector p2, int c = WHITE);
+		Segment(double x1, double y1, double z1, double x2, double y2, double z2, int c = WHITE);
 
 		Type getType() const;
 		Vector getCenter() const;
 
-		~Line();
+		~Segment();
 	};
 
 	class Triangle : public Primitive
@@ -176,7 +200,12 @@ namespace SU
 
 		extern Vector position,
 					  lookDirection,
-					  upDirection;
+					  upDirection,
+					  rightDirection;
+
+		void roll(double a);
+		void pitch(double a);
+		void yaw(double a);
 	}
 
 

@@ -80,6 +80,8 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 int main( int argc, char* args[] )
 {
+	std::cout << (SU::Vector(0, 1, 0).crossProduct(SU::Vector(0, 0, 1))) << std::endl;
+
 	int count = 0;
 
 	SDL_Init(SDL_INIT_VIDEO);
@@ -120,20 +122,20 @@ int main( int argc, char* args[] )
 
 
 
-	cube.add(new SU::Line(0, -0.5, 0,		0.5, 0, 0));
-	cube.add(new SU::Line(0, -0.5, 0,		-0.5, 0, 0));
-	cube.add(new SU::Line(0, -0.5, 0,		0, 0, 0.5));
-	cube.add(new SU::Line(0, -0.5, 0,		0, 0, -0.5));
+	cube.add(new SU::Segment(0, -0.5, 0,		0.5, 0, 0));
+	cube.add(new SU::Segment(0, -0.5, 0,		-0.5, 0, 0));
+	cube.add(new SU::Segment(0, -0.5, 0,		0, 0, 0.5));
+	cube.add(new SU::Segment(0, -0.5, 0,		0, 0, -0.5));
 
-	cube.add(new SU::Line(-0.5, 0, 0,		0, 0, -0.5));
-	cube.add(new SU::Line(-0.5, 0, 0,		0, 0, +0.5));
-	cube.add(new SU::Line(0.5, 0, 0,		0, 0, -0.5));
-	cube.add(new SU::Line(0.5, 0, 0,		0, 0, +0.5));
+	cube.add(new SU::Segment(-0.5, 0, 0,		0, 0, -0.5));
+	cube.add(new SU::Segment(-0.5, 0, 0,		0, 0, +0.5));
+	cube.add(new SU::Segment(0.5, 0, 0,		0, 0, -0.5));
+	cube.add(new SU::Segment(0.5, 0, 0,		0, 0, +0.5));
 
-	cube.add(new SU::Line(0, 0.5, 0,		0.5, 0, 0));
-	cube.add(new SU::Line(0, 0.5, 0,		-0.5, 0, 0));
-	cube.add(new SU::Line(0, 0.5, 0,		0, 0, 0.5));
-	cube.add(new SU::Line(0, 0.5, 0,		0, 0, -0.5));
+	cube.add(new SU::Segment(0, 0.5, 0,		0.5, 0, 0));
+	cube.add(new SU::Segment(0, 0.5, 0,		-0.5, 0, 0));
+	cube.add(new SU::Segment(0, 0.5, 0,		0, 0, 0.5));
+	cube.add(new SU::Segment(0, 0.5, 0,		0, 0, -0.5));
 
 
 	SU::Object aobject;
@@ -162,16 +164,7 @@ int main( int argc, char* args[] )
 	bool move = false;
 
 
-
-
-
-
-
-
-
-
-
-
+	SU::Camera::position = SU::Vector(0, 0, -10);
 
 
 	while (running)
@@ -274,40 +267,48 @@ int main( int argc, char* args[] )
 				}
 				break;
 
-				case SDLK_w:
+				case SDLK_i:
 				{
 					aobject.rotateAroundX(0.1);
 				}
 				break;
 
-				case SDLK_s:
+				case SDLK_k:
 				{
 					aobject.rotateAroundX(-0.1);
 				}
 				break;
 
-				case SDLK_a:
+				case SDLK_j:
 				{
 					aobject.rotateAroundY(0.1);
 				}
 				break;
 
-				case SDLK_d:
+				case SDLK_l:
 				{
 					aobject.rotateAroundY(-0.1);
 				}
 				break;
 
-				case SDLK_q:
+				case SDLK_u:
 				{
 					aobject.rotateAroundZ(0.1);
 				}
 				break;
 
-				case SDLK_e:
+				case SDLK_o:
 				{
 					aobject.rotateAroundZ(-0.1);
 				}
+				break;
+
+				case SDLK_w:
+					SU::Camera::pitch(0.01);
+				break;
+
+				case SDLK_s:
+					SU::Camera::pitch(-0.01);
 				break;
 
 				default: break;
@@ -346,7 +347,7 @@ int main( int argc, char* args[] )
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 
-		SDL_Delay(1);
+		SDL_Delay(10);
 	}
 
 	SDL_DestroyWindow(window);

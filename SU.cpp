@@ -142,7 +142,24 @@ namespace SU
 
 		Vector position = Vector(0, 0, 0),
 			   lookDirection = Vector(0, 0, 1),
-			   upDirection = Vector(0, 1, 0);
+			   upDirection = Vector(0, 1, 0),
+			   rightDirection = Vector(1, 0, 0);
+
+		void roll(double a)
+		{
+			upDirection = upDirection.rotated(lookDirection, a);
+			rightDirection = rightDirection.rotated(lookDirection, a);
+		}
+		void pitch(double a)
+		{
+			upDirection = upDirection.rotated(rightDirection, a);
+			lookDirection = lookDirection.rotated(rightDirection, a);
+		}
+		void yaw(double a)
+		{
+			rightDirection = rightDirection.rotated(upDirection, a);
+			lookDirection = lookDirection.rotated(upDirection, a);
+		}
 	}
 
 	int bgColor = 0;
@@ -174,6 +191,8 @@ namespace SU
 	// 		CUSTOM TYPE AND CLASS IMPLEMENTATIONS
 	//
 	// ==============================================================================
+
+	Vector::Vector(double xx, double yy, double zz) : x(xx), y(yy), z(zz) {}
 
 	double Vector::getLength() const
 	{
@@ -300,6 +319,7 @@ namespace SU
 		str << "SU::Vector( " << x << " , " << y << " , " << z << " )";
 		return str.str();
 	}
+
 	std::ostream& operator<<(std::ostream& os, const Vector& v)
 	{
 		return (os << v.toString());
@@ -307,8 +327,79 @@ namespace SU
 
 
 
+	Line::Line(Vector p, Vector d) : position(p), direction(d) {}
+
+	double Line::distanceFrom(const Vector& v) const
+	{
+		// TODO
+		return 0.666;
+	}
+
+	double Line::distanceFrom(const Line& l) const
+	{
+		// TODO
+		return 0.666;
+	}
+
+
+
+	Plane::Plane(Vector p, Vector d) : position(p), direction(d) {}
+
+	double Plane::distanceFrom(const Vector& v) const
+	{
+		// some easy math
+		return ( direction.x * (v.x - position.x) +
+				 direction.y * (v.y - position.y) +
+				 direction.z * (v.z - position.z ) ) / ( direction.getLength() );
+	}
+
+	bool Plane::doesIntersect(const Line& l) const
+	{
+		// they do not intersect only if they are parrallell
+		// but i think we should compare it to an (-EPSILON, +EPSILON) interval
+		// TODO
+		return ((direction * l.direction) != 0);
+	}
+
+	Vector Plane::getIntersection(const Line& l) const
+	{
+		// these are to shorten the above equations
+		double s1 = position.x;			// "s" is a point of the plane
+		double s2 = position.y;
+		double s3 = position.z;
+
+		double n1 = direction.x;		// "n" is the directional vector (diagonal) of the plane
+		double n2 = direction.y;
+		double n3 = direction.z;
+
+		double p1 = l.position.x;		// "p" is a point of the line
+		double p2 = l.position.y;
+		double p3 = l.position.z;
+
+		double v1 = l.direction.x;		// "v" is the direction of the line
+		double v2 = l.direction.y;
+		double v3 = l.direction.z;
+
+
+		// some even more shorteners
+		double sumNV = n1 * v1 + n2 * v2 + n3 * v3;
+		double sumSN = s1 * n1 + s2 * n2 + s3 * n3;
+
+		// the hardcore equations
+		double x = ( v1 * (sumSN - p2 * n2 - p3 * n3) + p1 * v2 * n2 + p1 * v3 * n3 ) / sumNV;
+		double y = ( v2 * (sumSN - p1 * n1 - p3 * n3) + p2 * v1 * n1 + p2 * v3 * n3 ) / sumNV;
+		double z = ( v3 * (sumSN - p1 * n1 - p2 * n2) + p3 * v1 * n1 + p3 * v2 * n2 ) / sumNV;
+		// not going to explain it, this is pure math, it should be correct
+
+		// yay!
+		return Vector(x, y, z);
+	}
+
+
 	Vector getTransformed(Vector v, Vector x, Vector y, Vector z)
 	{
+		// TODO: should be Vector::transform(x, y, z, p)
+
 		return Vector(v.x * x.x + v.y * y.x + v.z * z.x,
 					  v.x * x.y + v.y * y.y + v.z * z.y,
 					  v.x * x.z + v.y * y.z + v.z * z.z);
@@ -342,26 +433,26 @@ namespace SU
 
 
 
-	Line::Line(Vector p1, Vector p2, int c) : Primitive(c), P1(p1), P2(p2) {}
+	Segment::Segment(Vector p1, Vector p2, int c) : Primitive(c), P1(p1), P2(p2) {}
 
-	Line::Line(double x1, double y1, double z1,
+	Segment::Segment(double x1, double y1, double z1,
 			   double x2, double y2, double z2, int c) : Primitive(c)
 	{
 		P1 = Vector(x1, y1, z1);
 		P2 = Vector(x2, y2, z2);
 	}
 
-	Primitive::Type Line::getType() const
+	Primitive::Type Segment::getType() const
 	{
-		return Primitive::Type::LINE;
+		return Primitive::Type::SEGMENT;
 	}
 
-	Vector Line::getCenter() const
+	Vector Segment::getCenter() const
 	{
 		return (P1 + P2) / 2;
 	}
 
-	Line::~Line() {}
+	Segment::~Segment() {}
 
 
 
@@ -487,9 +578,9 @@ namespace SU
 			}
 			break;
 
-			case SU::Primitive::Type::LINE:
+			case SU::Primitive::Type::SEGMENT:
 			{
-				const Line* l = static_cast<const Line*>(p);
+				const Segment* l = static_cast<const Segment*>(p);
 				return (isOnScreen(l->P1) && isOnScreen(l->P2));
 			}
 
@@ -543,7 +634,8 @@ namespace SU
 		{
 			// camera position and direction should affect these
 
-			o->resultantPosition = o->position - SU::Camera::position;
+			o->resultantPosition = getTransformed(o->position, o->resultantX, o->resultantY, o->resultantZ) - Camera::position;
+
 			o->resultantX = o->X;
 			o->resultantY = o->Y;
 			o->resultantZ = o->Z;
@@ -553,17 +645,17 @@ namespace SU
 		{
 			if (o->transforming)
 			{
-				primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantX + o->resultantPosition, SU::mapColor(255, 0, 0)));
-				primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantY + o->resultantPosition, SU::mapColor(0, 255, 0)));
-				primitivesToRender.push_back(new SU::Line(o->resultantPosition, o->resultantZ + o->resultantPosition, SU::mapColor(0, 0, 255)));
+				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, o->resultantX + o->resultantPosition, SU::mapColor(255, 0, 0)));
+				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, o->resultantY + o->resultantPosition, SU::mapColor(0, 255, 0)));
+				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, o->resultantZ + o->resultantPosition, SU::mapColor(0, 0, 255)));
 			}
 			else
 			{
 				// if the Object isn't transformed, we should draw the normal axes
 
-				primitivesToRender.push_back(new SU::Line(o->resultantPosition, Vector(1, 0, 0) + o->resultantPosition, SU::mapColor(255, 0, 0)));
-				primitivesToRender.push_back(new SU::Line(o->resultantPosition, Vector(0, 1, 0) + o->resultantPosition, SU::mapColor(0, 255, 0)));
-				primitivesToRender.push_back(new SU::Line(o->resultantPosition, Vector(0, 0, 1) + o->resultantPosition, SU::mapColor(0, 0, 255)));
+				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(1, 0, 0) + o->resultantPosition, SU::mapColor(255, 0, 0)));
+				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(0, 1, 0) + o->resultantPosition, SU::mapColor(0, 255, 0)));
+				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(0, 0, 1) + o->resultantPosition, SU::mapColor(0, 0, 255)));
 			}
 		}
 
@@ -588,20 +680,20 @@ namespace SU
 				}
 				break;
 
-				case SU::Primitive::Type::LINE:
+				case SU::Primitive::Type::SEGMENT:
 				{
-					SU::Line *l;
+					SU::Segment *l;
 
 					if (o->transforming)
 					{
-						l = new SU::Line(getTransformed(static_cast<SU::Line*>(p)->P1, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
-										 getTransformed(static_cast<SU::Line*>(p)->P2, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
+						l = new SU::Segment(getTransformed(static_cast<SU::Segment*>(p)->P1, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
+										 getTransformed(static_cast<SU::Segment*>(p)->P2, o->resultantX, o->resultantY, o->resultantZ) + o->resultantPosition,
 										 p->color);
 					}
 					else
 					{
-						l = new SU::Line(static_cast<SU::Line*>(p)->P1 + o->resultantPosition,
-										 static_cast<SU::Line*>(p)->P2 + o->resultantPosition,
+						l = new SU::Segment(static_cast<SU::Segment*>(p)->P1 + o->resultantPosition,
+										 static_cast<SU::Segment*>(p)->P2 + o->resultantPosition,
 										 p->color);
 					}
 
@@ -679,9 +771,9 @@ namespace SU
 					}
 					break;
 
-					case SU::Primitive::Type::LINE:
+					case SU::Primitive::Type::SEGMENT:
 					{
-						Line* l = static_cast<Line*>(p);
+						Segment* l = static_cast<Segment*>(p);
 						SDL_Point p1 = positionOnScreen(l->P1);
 						SDL_Point p2 = positionOnScreen(l->P2);
 						line(surface, p1, p2, p->color);
