@@ -103,6 +103,7 @@ namespace SU
 		Vector position, direction;
 
 		Plane(Vector pos = Vector(0, 0, 0), Vector dir = Vector(0, 0, 1));
+		Plane(Vector a, Vector b, Vector c);
 
 		double distanceFrom(const Vector& v) const;
 

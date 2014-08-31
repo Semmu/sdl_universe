@@ -198,7 +198,7 @@ namespace SU
 		std::list<Object*> everyObject;
 		std::list<Primitive*> primitivesToRender;
 
-		Plane cameraPlane;
+		Plane cameraPlane, cameraBottomPlane, cameraLeftPlane, cameraRightPlane, cameraTopPlane;
 		Vector cameraPlaneWidth, cameraPlaneHeight, cameraPlaneBottomLeft;
 	}
 
@@ -372,6 +372,7 @@ namespace SU
 
 
 	Plane::Plane(Vector p, Vector d) : position(p), direction(d) {}
+	Plane::Plane(Vector a, Vector b, Vector c) : position(a), direction((a-b).crossProduct(c-b)) {}
 
 	double Plane::distanceFrom(const Vector& v) const
 	{
@@ -579,9 +580,18 @@ namespace SU
 
 
 
-	bool isOnScreen(const Vector& v)
+	bool isInFrontOfCamera(const Vector& v)
 	{
 		return cameraPlane.distanceFrom(v) > 0;
+	}
+
+	bool isOnScreen(const Vector& v)
+	{
+		return isInFrontOfCamera(v) &&
+		cameraBottomPlane.distanceFrom(v) > 0 &&
+		cameraRightPlane.distanceFrom(v) > 0 &&
+		cameraLeftPlane.distanceFrom(v) > 0 &&
+		cameraTopPlane.distanceFrom(v) > 0;
 	}
 
 	bool isOnScreen(const Primitive* p)
@@ -745,6 +755,12 @@ namespace SU
 		 					 cameraPlaneWidth.getLength() / width * height;
 
 		 cameraPlaneBottomLeft = cameraPlane.position - (cameraPlaneWidth / 2) - (cameraPlaneHeight / 2);
+
+
+		 cameraBottomPlane = Plane(Camera::position, cameraPlaneBottomLeft + cameraPlaneWidth, cameraPlaneBottomLeft);
+		 cameraTopPlane = Plane(Camera::position, cameraPlaneBottomLeft + cameraPlaneHeight, cameraPlaneBottomLeft + cameraPlaneHeight + cameraPlaneWidth);
+		 cameraRightPlane = Plane(Camera::position, cameraPlaneBottomLeft + cameraPlaneWidth + cameraPlaneHeight, cameraPlaneBottomLeft + cameraPlaneWidth);
+		 cameraLeftPlane = Plane(Camera::position, cameraPlaneBottomLeft, cameraPlaneBottomLeft + cameraPlaneHeight);
 
 		/*
 		 *

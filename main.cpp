@@ -194,7 +194,7 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		new Floating(true);
+		new Floating(false);
 	}
 	bool move = false;
 
@@ -392,8 +392,6 @@ int main( int argc, char* args[] )
 
 		SDL_Color c = {128, 128, 128};
 		std::stringstream fps;
-		// this FPS counter display the total average, not the current
-		// will be changed
 		fps << " " << previousSecFPS << " FPS     " << SU::primitivesRendered;
 		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
 		if (text == NULL)
