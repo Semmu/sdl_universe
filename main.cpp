@@ -398,9 +398,7 @@ int main( int argc, char* args[] )
 			DIE(TTF_GetError());
 
 		SDL_BlitSurface(text, NULL, surface, NULL);
-
-
-
+		SDL_FreeSurface(text);
 
 		#if USING_SDL1
 			SDL_Flip(surface);
@@ -409,13 +407,12 @@ int main( int argc, char* args[] )
 			// which is faster? this method or SDL_CreateSoftwareRenderer?
 			// or CreateTextureFromSurface() ???
 			SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
-			SDL_FreeSurface(text);
 
 			SDL_RenderCopy(renderer, texture, NULL, NULL);
 			SDL_RenderPresent(renderer);
 		#endif
 
-		SDL_Delay(10);
+//		SDL_Delay(10);
 	}
 
 	return 0;

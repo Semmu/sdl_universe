@@ -65,8 +65,13 @@ SDL1 vs. SDL2
 -------------
 
 The library can be compiled with SDL1 or SDL2, because it is only using SDL_Surface, which is the same in both SDL versions.
-But I think SDL1 is better, because it is simpler (there is no separate renderer, texture, etc.) and is also like 10% faster (according to FPS benchmarks).
-There is going to be a more detailed benchmarking after the library is mostly finished.
+But I think SDL1.2 is better, because
+* it is simpler (there is no separate renderer, texture, etc.)
+* is faster (according to FPS benchmarks)
+* consumes less CPU time
+* consumes less memory
+
+These statements are based on my own experience, but there is going to be a more detailed benchmarking after the library is mostly finished.
 
 
 
