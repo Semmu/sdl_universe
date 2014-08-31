@@ -588,14 +588,17 @@ namespace SU
 	bool isOnScreen(const Vector& v)
 	{
 		return isInFrontOfCamera(v) &&
-		cameraBottomPlane.distanceFrom(v) > 0 &&
-		cameraRightPlane.distanceFrom(v) > 0 &&
-		cameraLeftPlane.distanceFrom(v) > 0 &&
-		cameraTopPlane.distanceFrom(v) > 0;
+			   cameraBottomPlane.distanceFrom(v) > 0 &&
+			   cameraRightPlane.distanceFrom(v) > 0 &&
+			   cameraLeftPlane.distanceFrom(v) > 0 &&
+			   cameraTopPlane.distanceFrom(v) > 0;
 	}
 
 	bool isOnScreen(const Primitive* p)
 	{
+		// a Primitive is considered to be on screen if every Vector that it has is in front of the camera and
+		// 		at least one Vector is on the screen
+
 		switch(p->getType())
 		{
 			case SU::Primitive::Type::POINT:
@@ -608,7 +611,7 @@ namespace SU
 			case SU::Primitive::Type::SEGMENT:
 			{
 				const Segment* l = static_cast<const Segment*>(p);
-				return (isOnScreen(l->P1) && isOnScreen(l->P2));
+				return (isInFrontOfCamera(l->P1) && isInFrontOfCamera(l->P2)) && (isOnScreen(l->P1) || isOnScreen(l->P2));
 			}
 
 			default: break;
