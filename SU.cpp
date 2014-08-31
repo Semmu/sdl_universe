@@ -9,6 +9,13 @@
 //
 // ==================================================================================
 
+void swap(int& a, int& b)
+{
+	int aa = a;
+	a = b;
+	b = aa;
+}
+
 double randDouble(double max) { return double(rand()) / RAND_MAX * max; }
 
 double deg2rad(double d) { return d / 180 * M_PI; }
@@ -65,7 +72,7 @@ void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 	{
 		p.x = x1;
 
-		for (int c = (y1 > y2 ? y2 : y1); c < (y1 > y2 ? y1 : y2) + 1; c++)
+		for (int c = (y1 > y2 ? y2 : y1); c <= (y1 > y2 ? y1 : y2) + 1; c++)
 		{
 			p.y = c;
 			putpixel_nolock(dst, p, color);
@@ -76,7 +83,7 @@ void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 	{
 		p.y = y1;
 
-		for (int c = (x1 > x2 ? x2 : x1); c < (x1 > x2 ? x1 : x2) + 1; c++)
+		for (int c = (x1 > x2 ? x2 : x1); c <= (x1 > x2 ? x1 : x2) + 1; c++)
 		{
 			p.x = c;
 			putpixel_nolock(dst, p, color);
@@ -102,7 +109,7 @@ void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 			y1 = temp;
 		}
 
-		for (int c = x1 ; c < x2 ; c++)
+		for (int c = x1 ; c <= x2 ; c++)
 		{
 			p.x = c;
 			p.y = y1 - meredekseg * (c - x1);
@@ -123,7 +130,7 @@ void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 			y1 = temp;
 		}
 
-		for (int c = y1 ; c < y2 ; c++)
+		for (int c = y1 ; c <= y2 ; c++)
 		{
 			p.y = c;
 			p.x = x1 - 1 / meredekseg * (c - y1);
@@ -139,46 +146,50 @@ void line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
 	line(dst, p1.x, p1.y, p2.x, p2.y, c);
 }
 
-void tri(SDL_Surface* s, int x1, int y1, int x2, int y2, int x3, int y3, int c)
+void tri(SDL_Surface* s, int x0, int y0, int x1, int y1, int x2, int y2, int c)
 {
-	// TODO: "buggy", when part of the triangle is out of the surface, it should still fill the appropriate part
+	// snippet from:
+	// 		 http://www.codeproject.com/Tips/86354/draw-triangle-algorithm-D
 
-	int rc = rand();
+    int width = s->w;
+    int height = s->h;
 
-	line(s, x1, y1, x2, y2, rc);
-	line(s, x1, y1, x3, y3, rc);
-	line(s, x2, y2, x3, y3, rc);
+    if (y1 > y2)
+    {
+        swap(x1, x2);
+        swap(y1, y2);
+    }
+    if (y0 > y1)
+    {
+        swap(x0, x1);
+        swap(y0, y1);
+    }
+    if (y1 > y2)
+    {
+        swap(x1, x2);
+        swap(y1, y2);
+    }
 
-	if (SDL_MUSTLOCK(s))
-		SDL_LockSurface(s);
-
-	int first, last;
-	for(int h = 0; h < s->h; h++)
-	{
-		first = s->w;
-		last = -1;
-
-		for(int w = 0; w < s->w; w++)
-			if (getpixel_nolock(s, w, h) == rc)
-			{
-				first = w;
-				break;
-			}
-
-		for(int w = s->w - 1; w > -1; w--)
-			if (getpixel_nolock(s, w, h) == rc)
-			{
-				last = w;
-				break;
-			}
-
-		if (first < s->w && last > 0)
-			for(int w = first; w <= last; w++)
-				putpixel_nolock(s, w, h, c);
-	}
-
-	if (SDL_MUSTLOCK(s))
-		SDL_UnlockSurface(s);
+    double dx_far = double(x2 - x0) / (y2 - y0 + 1);
+    double dx_upper = double(x1 - x0) / (y1 - y0 + 1);
+    double dx_low = double(x2 - x1) / (y2 - y1 + 1);
+    double xf = x0;
+    double xt = x0 + dx_upper;
+    for (int y = y0; y <= (y2 > height-1 ? height-1 : y2); y++)
+    {
+        if (y >= 0)
+        {
+            for (int x = (xf > 0 ? int(xf) : 0); x <= (xt < width ? xt : width-1) ; x++)
+            	putpixel_nolock(s, x, y, c);
+            for (int x = (xf < width ? int(xf) : width-1); x >= (xt > 0 ? xt : 0); x--)
+            	putpixel_nolock(s, x, y, c);
+        }
+        xf += dx_far;
+        if (y < y1)
+            xt += dx_upper;
+        else
+            xt += dx_low;
+    }
 }
 void tri(SDL_Surface* s, SDL_Point p1, SDL_Point p2, SDL_Point p3, int c)
 {
@@ -822,8 +833,6 @@ namespace SU
 
 		SDL_FillRect(surface, NULL, bgColor);
 		primitivesRendered = 0;
-
-		tri(surface, 100, 100, 200, 200, 100, 300, rand());
 
 
 		/*

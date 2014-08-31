@@ -197,7 +197,7 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		//new Floating(false);
+		new Floating(false);
 	}
 	bool move = false;
 
