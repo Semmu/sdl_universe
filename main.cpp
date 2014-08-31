@@ -26,8 +26,8 @@
 	#define FLAGS SDL_WINDOW_SHOWN
 #endif
 
-const double CAMERA_ROTATION_AMOUNT = 0.02;
-const double CAMERA_MOVEMENT_AMOUNT = 0.07;
+const double CAMERA_ROTATION_AMOUNT = 0.01;
+const double CAMERA_MOVEMENT_AMOUNT = 0.1;
 
 void DIE(const char* reason)
 {
@@ -49,7 +49,7 @@ void DIE()
 }
 
 
-SU::Model cube;
+SU::Model cube, house;
 
 class Floating
 {
@@ -69,7 +69,7 @@ public:
 		obj.position = destination;
 		newDestination();
 
-		obj.model = &cube;
+		obj.model = &house;
 
 		obj.transforming = distort;
 		obj.X = SU::Vector(1, randDouble(1) - 0.5, randDouble(1) - 0.5).getNormalized();
@@ -81,7 +81,8 @@ public:
 
 	void newDestination()
 	{
-		destination = SU::Vector(randDouble(30.0) - 15.0, randDouble(20.0) - 10.0, randDouble(10) + 1);
+		const double radius = 50;
+		destination = SU::Vector(randDouble(2.0) - 1.0, randDouble(2.0) - 1.0, randDouble(2.0) - 1.0).getNormalized() * radius;
 	}
 
 	void move()
@@ -138,7 +139,7 @@ int main( int argc, char* args[] )
 											0xFF000000);
 	#endif
 
-	SU::init(surface, SU::Flags::DEBUG_TRANSFORMATIONS);
+	SU::init(surface);
 
 
 	TTF_Font *font = TTF_OpenFont("./Deltoid-sans.ttf", 32);
@@ -168,42 +169,47 @@ int main( int argc, char* args[] )
 	cube.add(new SU::Segment(0, 0.5, 0,		0, 0, -0.5));
 
 
-	SU::Object center;
-	center.model = &cube;
-	center.transforming = true;
-	center.X = SU::Vector(0.1, 0, 0);
-	center.Y = SU::Vector(0, 0.1, 0);
-	center.Z = SU::Vector(0, 0, 0.1);
 
-	SU::Object aobject;
-	aobject.model = &cube;
-	aobject.position = SU::Vector(0.5, -0.5, 1.5);
 
-	aobject.transforming = true;
-	aobject.X = SU::Vector(1, 0.25, 0);
-	aobject.Y = SU::Vector(-0.25, 1, 0);
-	aobject.rotateAroundX(M_PI / 2);
 
-	SU::Object second = SU::Object();
-	second.model = &cube;
-	second.position = SU::Vector(1, 0.5, 0);
+	// front
+	house.add(new SU::Triangle(0, 0, 0,		1, 0, 0,	0, 1, 0,	SU::mapColor(200, 200, 50)));
+	house.add(new SU::Triangle(1, 1, 0,		1, 0, 0,	0, 1, 0,	SU::mapColor(200, 200, 50)));
+	house.add(new SU::Triangle(0, 1, 0,		1, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20)));
 
-	second.transforming = true;
-	second.X = SU::Vector(-0.25, 0, 0);
-	second.Y = SU::Vector(0, -0.25, 0);
-	second.Z = SU::Vector(0, 0, 0.25);
+	// right
+	house.add(new SU::Triangle(1, 0, 0,		1, 1, 0,	1, 1, 1,	SU::mapColor(150, 150, 30)));
+	house.add(new SU::Triangle(1, 0, 0,		1, 0, 1,	1, 1, 1,	SU::mapColor(150, 150, 30)));
+	house.add(new SU::Triangle(1, 1, 0,		1, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
 
-	aobject.addChild(&second);
+	// left
+	house.add(new SU::Triangle(0, 0, 0,		0, 1, 0,	0, 1, 1,	SU::mapColor(150, 150, 30)));
+	house.add(new SU::Triangle(0, 0, 0,		0, 0, 1,	0, 1, 1,	SU::mapColor(150, 150, 30)));
+	house.add(new SU::Triangle(0, 1, 0,		0, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
 
-	for (int i = 0; i < 1200; i++)
+	// back
+	house.add(new SU::Triangle(0, 0, 1,		0, 1, 1,	1, 1, 1,	SU::mapColor(80, 80, 10)));
+	house.add(new SU::Triangle(0, 0, 1,		1, 0, 1,	1, 1, 1,	SU::mapColor(80, 80, 10)));
+	house.add(new SU::Triangle(1, 1, 1,		0, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(50, 10, 10)));
+
+	// bottom
+	house.add(new SU::Triangle(0, 0, 0,		0, 0, 1,	1, 0, 0,	SU::mapColor(10, 20, 50)));
+	house.add(new SU::Triangle(1, 0, 1,		0, 0, 1,	1, 0, 0,	SU::mapColor(10, 20, 50)));
+
+
+
+
+
+	SU::Object origo;
+	origo.model = &cube;
+
+	for (int i = 0; i < 500; i++)
 	{
 		new Floating(false);
 	}
 	bool move = false;
 
-
-	SU::Camera::position = SU::Vector(1, 0, -30);
-
+	SU::Camera::position.z = -150;
 
 	while (running)
 	{
@@ -310,42 +316,6 @@ int main( int argc, char* args[] )
 				case SDLK_KP_PLUS:
 				{
 					SU::Camera::FOV++;
-				}
-				break;
-
-				case SDLK_i:
-				{
-					aobject.rotateAroundX(0.1);
-				}
-				break;
-
-				case SDLK_k:
-				{
-					aobject.rotateAroundX(-0.1);
-				}
-				break;
-
-				case SDLK_j:
-				{
-					aobject.rotateAroundY(0.1);
-				}
-				break;
-
-				case SDLK_l:
-				{
-					aobject.rotateAroundY(-0.1);
-				}
-				break;
-
-				case SDLK_u:
-				{
-					aobject.rotateAroundZ(0.1);
-				}
-				break;
-
-				case SDLK_o:
-				{
-					aobject.rotateAroundZ(-0.1);
 				}
 				break;
 
