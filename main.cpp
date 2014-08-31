@@ -150,7 +150,7 @@ int main( int argc, char* args[] )
 
 
 
-	cube.add(new SU::Triangle(-0.5, -0.5, -0.5, 	-0.5, -0.5, 0.5,	0.5, -0.5, -0.5, SU::mapColor(128, 128, 128)));
+	//cube.add(new SU::Triangle(-0.5, -0.5, -0.5, 	-0.5, -0.5, 0.5,	0.5, -0.5, -0.5, SU::mapColor(128, 128, 128)));
 
 	cube.add(new SU::Segment(0, -0.5, 0,	0.5, 0, 0));
 	cube.add(new SU::Segment(0, -0.5, 0,	-0.5, 0, 0));
@@ -195,14 +195,14 @@ int main( int argc, char* args[] )
 
 	aobject.addChild(&second);
 
-	for (int i = 0; i < 300; i++)
+	for (int i = 0; i < 1200; i++)
 	{
 		new Floating(false);
 	}
 	bool move = false;
 
 
-	SU::Camera::position = SU::Vector(1, 0, -20);
+	SU::Camera::position = SU::Vector(1, 0, -30);
 
 
 	while (running)

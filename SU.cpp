@@ -61,85 +61,48 @@ void point(SDL_Surface* dst, SDL_Point p, int c)
 	return point(dst, p.x, p.y, c);
 }
 
-void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
+void line(SDL_Surface* s, int x0, int y0, int x1, int y1, int color)
 {
-	if (SDL_MUSTLOCK(dst))
-		SDL_LockSurface(dst);
+	// Bresenham's line algorithm
+	// 		http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
 
-	SDL_Point p;
+	int dx = abs(x1-x0);
+	int dy = abs(y1-y0);
 
-	if (x1 == x2)
+	int sx = (x0 < x1) ? 1 : -1;
+	int sy = (y0 < y1) ? 1 : -1;
+
+	int err = dx - dy;
+
+	bool loop = true;
+
+
+	if (SDL_MUSTLOCK(s))
+		SDL_LockSurface(s);
+
+	while(loop)
 	{
-		p.x = x1;
+		putpixel_nolock(s, x0, y0, color);
+		if (x0 == x1 && y0 == y1)
+			loop = false;
 
-		for (int c = (y1 > y2 ? y2 : y1); c <= (y1 > y2 ? y1 : y2) + 1; c++)
+		int e2 = 2 * err;
+
+		if (e2 > -dy)
 		{
-			p.y = c;
-			putpixel_nolock(dst, p, color);
+			err = err - dy;
+			x0 = x0 + sx;
+		}
+
+		if (e2 < dx)
+		{
+			err = err + dx;
+			y0 = y0 + sy;
 		}
 	}
 
-	if (y1 == y2)
-	{
-		p.y = y1;
-
-		for (int c = (x1 > x2 ? x2 : x1); c <= (x1 > x2 ? x1 : x2) + 1; c++)
-		{
-			p.x = c;
-			putpixel_nolock(dst, p, color);
-		}
-	}
-
-
-	double meredekseg = ( double(y1) - double(y2) ) / (double(x2) - double(x1));
-
-	bool xdir = (meredekseg <= 1 && meredekseg >= -1 ? true : false);
-
-	if (xdir)
-	{
-		if (x1 > x2)
-		{
-			int temp;
-			temp = x2;
-			x2 = x1;
-			x1 = temp;
-
-			temp = y2;
-			y2 = y1;
-			y1 = temp;
-		}
-
-		for (int c = x1 ; c <= x2 ; c++)
-		{
-			p.x = c;
-			p.y = y1 - meredekseg * (c - x1);
-			putpixel_nolock(dst, p, color);
-		}
-	}
-	else
-	{
-		if (y1 > y2)
-		{
-			int temp;
-			temp = x2;
-			x2 = x1;
-			x1 = temp;
-
-			temp = y2;
-			y2 = y1;
-			y1 = temp;
-		}
-
-		for (int c = y1 ; c <= y2 ; c++)
-		{
-			p.y = c;
-			p.x = x1 - 1 / meredekseg * (c - y1);
-			putpixel_nolock(dst, p, color);
-		}
-	}
-
-	if (SDL_MUSTLOCK(dst))
-		SDL_UnlockSurface(dst);
+	if (SDL_MUSTLOCK(s))
+		SDL_UnlockSurface(s);
 }
 void line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
 {
