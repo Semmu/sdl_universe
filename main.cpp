@@ -150,13 +150,15 @@ int main( int argc, char* args[] )
 
 
 
-	cube.add(new SU::Segment(0, -0.5, 0,		0.5, 0, 0));
-	cube.add(new SU::Segment(0, -0.5, 0,		-0.5, 0, 0));
-	cube.add(new SU::Segment(0, -0.5, 0,		0, 0, 0.5));
-	cube.add(new SU::Segment(0, -0.5, 0,		0, 0, -0.5));
+	cube.add(new SU::Triangle(-0.5, -0.5, -0.5, 	-0.5, -0.5, 0.5,	0.5, -0.5, -0.5, SU::mapColor(128, 128, 128)));
 
-	cube.add(new SU::Segment(-0.5, 0, 0,		0, 0, -0.5));
-	cube.add(new SU::Segment(-0.5, 0, 0,		0, 0, +0.5));
+	cube.add(new SU::Segment(0, -0.5, 0,	0.5, 0, 0));
+	cube.add(new SU::Segment(0, -0.5, 0,	-0.5, 0, 0));
+	cube.add(new SU::Segment(0, -0.5, 0,	0, 0, 0.5));
+	cube.add(new SU::Segment(0, -0.5, 0,	0, 0, -0.5));
+
+	cube.add(new SU::Segment(-0.5, 0, 0,	0, 0, -0.5));
+	cube.add(new SU::Segment(-0.5, 0, 0,	0, 0, +0.5));
 	cube.add(new SU::Segment(0.5, 0, 0,		0, 0, -0.5));
 	cube.add(new SU::Segment(0.5, 0, 0,		0, 0, +0.5));
 
@@ -180,6 +182,7 @@ int main( int argc, char* args[] )
 	aobject.transforming = true;
 	aobject.X = SU::Vector(1, 0.25, 0);
 	aobject.Y = SU::Vector(-0.25, 1, 0);
+	aobject.rotateAroundX(M_PI / 2);
 
 	SU::Object second = SU::Object();
 	second.model = &cube;
@@ -194,7 +197,7 @@ int main( int argc, char* args[] )
 
 	for (int i = 0; i < 300; i++)
 	{
-		new Floating(false);
+		//new Floating(false);
 	}
 	bool move = false;
 

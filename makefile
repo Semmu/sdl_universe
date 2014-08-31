@@ -15,7 +15,7 @@ LINKER_FLAGS2 = `sdl2-config --libs` -lSDL2_ttf
 # output name
 OBJ_NAME = sdl_universe
 
-default: sdl2
+default: sdl1
 
 sdl2: $(OBJS)
 	@echo "Building with SDL2"

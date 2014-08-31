@@ -27,6 +27,12 @@ void putpixel_nolock(SDL_Surface* s, SDL_Point p, int c)
 	putpixel_nolock(s, p.x, p.y, c);
 }
 
+int getpixel_nolock(SDL_Surface* s, int x, int y)
+{
+	Uint32 *pixels = (Uint32 *)s->pixels;
+	return pixels[ ( y * s->w ) + x ];
+}
+
 void putpixel(SDL_Surface* s, int x, int y, int color)
 {
 	if (SDL_MUSTLOCK(s))
@@ -50,8 +56,6 @@ void point(SDL_Surface* dst, SDL_Point p, int c)
 
 void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 {
-	// TODO: lock surface pixels and manually access them
-
 	if (SDL_MUSTLOCK(dst))
 		SDL_LockSurface(dst);
 
@@ -133,6 +137,52 @@ void line(SDL_Surface* dst, int x1, int y1, int x2, int y2, int color)
 void line(SDL_Surface* dst, SDL_Point p1, SDL_Point p2, int c)
 {
 	line(dst, p1.x, p1.y, p2.x, p2.y, c);
+}
+
+void tri(SDL_Surface* s, int x1, int y1, int x2, int y2, int x3, int y3, int c)
+{
+	// TODO: "buggy", when part of the triangle is out of the surface, it should still fill the appropriate part
+
+	int rc = rand();
+
+	line(s, x1, y1, x2, y2, rc);
+	line(s, x1, y1, x3, y3, rc);
+	line(s, x2, y2, x3, y3, rc);
+
+	if (SDL_MUSTLOCK(s))
+		SDL_LockSurface(s);
+
+	int first, last;
+	for(int h = 0; h < s->h; h++)
+	{
+		first = s->w;
+		last = -1;
+
+		for(int w = 0; w < s->w; w++)
+			if (getpixel_nolock(s, w, h) == rc)
+			{
+				first = w;
+				break;
+			}
+
+		for(int w = s->w - 1; w > -1; w--)
+			if (getpixel_nolock(s, w, h) == rc)
+			{
+				last = w;
+				break;
+			}
+
+		if (first < s->w && last > 0)
+			for(int w = first; w <= last; w++)
+				putpixel_nolock(s, w, h, c);
+	}
+
+	if (SDL_MUSTLOCK(s))
+		SDL_UnlockSurface(s);
+}
+void tri(SDL_Surface* s, SDL_Point p1, SDL_Point p2, SDL_Point p3, int c)
+{
+	tri(s, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, c);
 }
 
 bool sortPrimitivesNearToFar(const SU::Primitive* p1, const SU::Primitive* p2)
@@ -611,7 +661,15 @@ namespace SU
 			case SU::Primitive::Type::SEGMENT:
 			{
 				const Segment* l = static_cast<const Segment*>(p);
-				return (isInFrontOfCamera(l->P1) && isInFrontOfCamera(l->P2)) && (isOnScreen(l->P1) || isOnScreen(l->P2));
+				return (isInFrontOfCamera(l->P1) && isInFrontOfCamera(l->P2)) &&
+					   (isOnScreen(l->P1) || isOnScreen(l->P2));
+			}
+
+			case SU::Primitive::Type::TRIANGLE:
+			{
+				const Triangle* t = static_cast<const Triangle*>(p);
+				return (isInFrontOfCamera(t->P1) && isInFrontOfCamera(t->P2) && isInFrontOfCamera(t->P3)) &&
+					   (isOnScreen(t->P1) || isOnScreen(t->P2) || isOnScreen(t->P3));
 			}
 
 			default: break;
@@ -705,17 +763,40 @@ namespace SU
 					if (o->transforming)
 					{
 						l = new SU::Segment(static_cast<SU::Segment*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-										 static_cast<SU::Segment*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-										 p->color);
+											static_cast<SU::Segment*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+											p->color);
 					}
 					else
 					{
 						l = new SU::Segment(static_cast<SU::Segment*>(p)->P1 + o->resultantPosition,
-										 static_cast<SU::Segment*>(p)->P2 + o->resultantPosition,
-										 p->color);
+											static_cast<SU::Segment*>(p)->P2 + o->resultantPosition,
+											p->color);
 					}
 
 					primitivesToRender.push_back(l);
+				}
+				break;
+
+				case SU::Primitive::Type::TRIANGLE:
+				{
+					SU::Triangle *t;
+
+					if (o->transforming)
+					{
+						t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+											 static_cast<SU::Triangle*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+											 static_cast<SU::Triangle*>(p)->P3.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+											 p->color);
+					}
+					else
+					{
+						t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1 + o->resultantPosition,
+											 static_cast<SU::Triangle*>(p)->P2 + o->resultantPosition,
+											 static_cast<SU::Triangle*>(p)->P3 + o->resultantPosition,
+											 p->color);
+					}
+
+					primitivesToRender.push_back(t);
 				}
 				break;
 
@@ -741,6 +822,8 @@ namespace SU
 
 		SDL_FillRect(surface, NULL, bgColor);
 		primitivesRendered = 0;
+
+		tri(surface, 100, 100, 200, 200, 100, 300, rand());
 
 
 		/*
@@ -808,8 +891,7 @@ namespace SU
 					case SU::Primitive::Type::POINT:
 					{
 						Point* pt = static_cast<Point*>(p);
-						Vector v = pt->P1;
-						SDL_Point sp = positionOnScreen(v);
+						SDL_Point sp = positionOnScreen(pt->P1);
 						point(surface, sp, pt->color);
 					}
 					break;
@@ -820,6 +902,16 @@ namespace SU
 						SDL_Point p1 = positionOnScreen(l->P1);
 						SDL_Point p2 = positionOnScreen(l->P2);
 						line(surface, p1, p2, p->color);
+					}
+					break;
+
+					case SU::Primitive::Type::TRIANGLE:
+					{
+						Triangle* t = static_cast<Triangle*>(p);
+						SDL_Point p1 = positionOnScreen(t->P1);
+						SDL_Point p2 = positionOnScreen(t->P2);
+						SDL_Point p3 = positionOnScreen(t->P3);
+						tri(surface, p1, p2, p3, p->color);
 					}
 					break;
 
