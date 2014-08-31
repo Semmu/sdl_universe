@@ -707,6 +707,8 @@ namespace SU
 				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(0, 1, 0) + o->resultantPosition, SU::mapColor(0, 255, 0)));
 				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(0, 0, 1) + o->resultantPosition, SU::mapColor(0, 0, 255)));
 			}
+
+			primitivesToRender.push_back(new SU::Segment(Vector(0, 0, 0), o->resultantPosition, SU::mapColor(50, 50, 50)));
 		}
 
 		for (Primitive* p : o->model->contents)
@@ -883,7 +885,17 @@ namespace SU
 						SDL_Point p1 = positionOnScreen(t->P1);
 						SDL_Point p2 = positionOnScreen(t->P2);
 						SDL_Point p3 = positionOnScreen(t->P3);
-						tri(surface, p1, p2, p3, p->color);
+
+						if (flags & Flags::DEBUG_WIREFRAMING)
+						{
+							line(surface, p1, p2, p->color);
+							line(surface, p1, p3, p->color);
+							line(surface, p3, p2, p->color);
+						}
+						else
+						{
+							tri(surface, p1, p2, p3, p->color);
+						}
 					}
 					break;
 

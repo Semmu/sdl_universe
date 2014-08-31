@@ -239,10 +239,28 @@ int main( int argc, char* args[] )
 					if (e.key.repeat == 0)
 					#endif
 					{
-						if (e.key.keysym.sym == SDLK_SPACE)
-							move = !move;
-						else
-							pressed_down_keys.push_back(e.key.keysym.sym);
+						switch (e.key.keysym.sym)
+						{
+							case SDLK_ESCAPE:
+								running = false;
+							break;
+
+							case SDLK_SPACE:
+								move = !move;
+							break;
+
+							case SDLK_t:
+								SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
+							break;
+
+							case SDLK_f:
+								SU::toggleFlag(SU::Flags::DEBUG_WIREFRAMING);
+							break;
+
+							default:
+								pressed_down_keys.push_back(e.key.keysym.sym);
+							break;
+						}
 					}
 				}
 				break;
@@ -259,18 +277,6 @@ int main( int argc, char* args[] )
 		{
 			switch(k)
 			{
-				case SDLK_ESCAPE:
-				{
-					running = false;
-				}
-				break;
-
-				case SDLK_h:
-				{
-					SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
-				}
-				break;
-
 				case SDLK_LEFT:
 				{
 					SU::Camera::position -= SU::Camera::rightDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
