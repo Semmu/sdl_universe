@@ -520,6 +520,11 @@ namespace SU
 		return (P1 + P2 + P3) / 3;
 	}
 
+	Vector Triangle::getDirection() const
+	{
+		return (P2 - P1).crossProduct(P2 - P3);
+	}
+
 	Triangle::~Triangle() {}
 
 
@@ -650,6 +655,11 @@ namespace SU
 		}
 
 		return false;
+	}
+
+	bool isFacingTheCamera(const Triangle* t)
+	{
+		return t->getDirection().angleTo(Camera::position - t->getCenter()) < M_PI / 2;
 	}
 
 	SDL_Point positionOnScreen(const Vector& v)
@@ -844,7 +854,8 @@ namespace SU
 		 *
 		 */
 
-		 primitivesToRender.sort(sortPrimitivesNearToFar);
+		 if (flags & Flags::DEPTH_SORT)
+			 primitivesToRender.sort(sortPrimitivesNearToFar);
 
 
 
@@ -882,19 +893,23 @@ namespace SU
 					case SU::Primitive::Type::TRIANGLE:
 					{
 						Triangle* t = static_cast<Triangle*>(p);
-						SDL_Point p1 = positionOnScreen(t->P1);
-						SDL_Point p2 = positionOnScreen(t->P2);
-						SDL_Point p3 = positionOnScreen(t->P3);
 
-						if (flags & Flags::DEBUG_WIREFRAMING)
+						if ((flags & Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
 						{
-							line(surface, p1, p2, p->color);
-							line(surface, p1, p3, p->color);
-							line(surface, p3, p2, p->color);
-						}
-						else
-						{
-							tri(surface, p1, p2, p3, p->color);
+							SDL_Point p1 = positionOnScreen(t->P1);
+							SDL_Point p2 = positionOnScreen(t->P2);
+							SDL_Point p3 = positionOnScreen(t->P3);
+
+							if (flags & Flags::DEBUG_WIREFRAMING)
+							{
+								line(surface, p1, p2, p->color);
+								line(surface, p1, p3, p->color);
+								line(surface, p3, p2, p->color);
+							}
+							else
+							{
+								tri(surface, p1, p2, p3, p->color);
+							}
 						}
 					}
 					break;

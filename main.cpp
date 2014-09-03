@@ -4,27 +4,36 @@
 #include <sstream>
 #include <cmath>
 
+#if 0
+	#define WIDTH 1920
+	#define HEIGHT 1080
+#else
+	#define WINDOWED
+	#define WIDTH 1600
+	#define HEIGHT 800
+#endif
 
 #if USING_SDL1
 	#include <SDL/SDL.h>
 	#include <SDL/SDL_ttf.h>
+	#ifdef WINDOWED
+		#define FLAGS SDL_ANYFORMAT
+	#else
+		#define FLAGS SDL_ANYFORMAT | SDL_FULLSCREEN
+	#endif
 #else
 	#include <SDL2/SDL.h>
 	#include <SDL2/SDL_ttf.h>
+	#ifdef WINDOWED
+		#define FLAGS SDL_WINDOW_SHOWN
+	#else
+		#define FLAGS SDL_WINDOW_FULLSCREEN_DESKTOP
+	#endif
 #endif
 
 #include "SU.h"
 
 
-#if 0
-	#define WIDTH 1920
-	#define HEIGHT 1080
-	#define FLAGS SDL_WINDOW_FULLSCREEN_DESKTOP
-#else
-	#define WIDTH 1600
-	#define HEIGHT 800
-	#define FLAGS SDL_WINDOW_SHOWN
-#endif
 
 const double CAMERA_ROTATION_AMOUNT = 0.01;
 const double CAMERA_MOVEMENT_AMOUNT = 0.1;
@@ -81,7 +90,7 @@ public:
 
 	void newDestination()
 	{
-		const double radius = 50;
+		const double radius = 20;
 		destination = SU::Vector(randDouble(2.0) - 1.0, randDouble(2.0) - 1.0, randDouble(2.0) - 1.0).getNormalized() * radius;
 	}
 
@@ -118,7 +127,7 @@ int main( int argc, char* args[] )
 
 
 	#if USING_SDL1
-		SDL_Surface *surface = SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_ANYFORMAT);
+		SDL_Surface *surface = SDL_SetVideoMode(WIDTH, HEIGHT, 32, FLAGS);
 	#else
 		SDL_Window* 	window;
 		SDL_Renderer* 	renderer;
@@ -151,8 +160,6 @@ int main( int argc, char* args[] )
 
 
 
-	//cube.add(new SU::Triangle(-0.5, -0.5, -0.5, 	-0.5, -0.5, 0.5,	0.5, -0.5, -0.5, SU::mapColor(128, 128, 128)));
-
 	cube.add(new SU::Segment(0, -0.5, 0,	0.5, 0, 0));
 	cube.add(new SU::Segment(0, -0.5, 0,	-0.5, 0, 0));
 	cube.add(new SU::Segment(0, -0.5, 0,	0, 0, 0.5));
@@ -174,27 +181,27 @@ int main( int argc, char* args[] )
 
 	// front
 	house.add(new SU::Triangle(0, 0, 0,		1, 0, 0,	0, 1, 0,	SU::mapColor(200, 200, 50)));
-	house.add(new SU::Triangle(1, 1, 0,		1, 0, 0,	0, 1, 0,	SU::mapColor(200, 200, 50)));
+	house.add(new SU::Triangle(1, 1, 0,		0, 1, 0,	1, 0, 0,	SU::mapColor(200, 200, 50)));
 	house.add(new SU::Triangle(0, 1, 0,		1, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20)));
 
 	// right
-	house.add(new SU::Triangle(1, 0, 0,		1, 1, 0,	1, 1, 1,	SU::mapColor(150, 150, 30)));
+	house.add(new SU::Triangle(1, 0, 0,		1, 1, 1,	1, 1, 0,	SU::mapColor(150, 150, 30)));
 	house.add(new SU::Triangle(1, 0, 0,		1, 0, 1,	1, 1, 1,	SU::mapColor(150, 150, 30)));
 	house.add(new SU::Triangle(1, 1, 0,		1, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
 
 	// left
 	house.add(new SU::Triangle(0, 0, 0,		0, 1, 0,	0, 1, 1,	SU::mapColor(150, 150, 30)));
-	house.add(new SU::Triangle(0, 0, 0,		0, 0, 1,	0, 1, 1,	SU::mapColor(150, 150, 30)));
-	house.add(new SU::Triangle(0, 1, 0,		0, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
+	house.add(new SU::Triangle(0, 0, 0,		0, 1, 1,	0, 0, 1,	SU::mapColor(150, 150, 30)));
+	house.add(new SU::Triangle(0, 1, 1,		0, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
 
 	// back
 	house.add(new SU::Triangle(0, 0, 1,		0, 1, 1,	1, 1, 1,	SU::mapColor(80, 80, 10)));
-	house.add(new SU::Triangle(0, 0, 1,		1, 0, 1,	1, 1, 1,	SU::mapColor(80, 80, 10)));
+	house.add(new SU::Triangle(0, 0, 1,		1, 1, 1,	1, 0, 1,	SU::mapColor(80, 80, 10)));
 	house.add(new SU::Triangle(1, 1, 1,		0, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(50, 10, 10)));
 
 	// bottom
 	house.add(new SU::Triangle(0, 0, 0,		0, 0, 1,	1, 0, 0,	SU::mapColor(10, 20, 50)));
-	house.add(new SU::Triangle(1, 0, 1,		0, 0, 1,	1, 0, 0,	SU::mapColor(10, 20, 50)));
+	house.add(new SU::Triangle(1, 0, 1,		1, 0, 0,	0, 0, 1,	SU::mapColor(10, 20, 50)));
 
 
 
@@ -209,7 +216,7 @@ int main( int argc, char* args[] )
 	}
 	bool move = false;
 
-	SU::Camera::position.z = -150;
+	SU::Camera::position.z = -3;
 
 	while (running)
 	{
@@ -257,6 +264,14 @@ int main( int argc, char* args[] )
 								SU::toggleFlag(SU::Flags::DEBUG_WIREFRAMING);
 							break;
 
+							case SDLK_c:
+								SU::toggleFlag(SU::Flags::ONLY_FACING_TRIANGLES);
+							break;
+
+							case SDLK_v:
+								SU::toggleFlag(SU::Flags::DEPTH_SORT);
+							break;
+
 							default:
 								pressed_down_keys.push_back(e.key.keysym.sym);
 							break;
@@ -301,13 +316,13 @@ int main( int argc, char* args[] )
 				}
 				break;
 
-				case SDLK_PAGEUP:
+				case SDLK_RSHIFT:
 				{
 					SU::Camera::position += SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
 				break;
 
-				case SDLK_PAGEDOWN:
+				case SDLK_KP1:
 				{
 					SU::Camera::position -= SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}

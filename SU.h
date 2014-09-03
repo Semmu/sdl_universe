@@ -169,6 +169,8 @@ namespace SU
 		Type getType() const;
 		Vector getCenter() const;
 
+		Vector getDirection() const;
+
 		~Triangle();
 	};
 
@@ -235,20 +237,23 @@ namespace SU
 
 	enum Flags
 	{
-		DEBUG_WIREFRAMING = 1,
-		DEBUG_TRANSFORMATIONS
+		DEBUG_WIREFRAMING =			0b1,
+		DEBUG_TRANSFORMATIONS =		0b10,
+		ONLY_FACING_TRIANGLES = 	0b100,
+		DEPTH_SORT =				0b1000,
 //		GLOBAL_LIGHT,
 //		LOCAL_LIGHTS,
 //		BIG_CHUNK_SPLITTING,
 //		COLLISION_SPLITTING,
-//		FAST_DEPTH_SORT,
 //		Z_BUFFER_SORT
+		DEFAULT =					ONLY_FACING_TRIANGLES | DEPTH_SORT
 	};
 
 	extern int bgColor;
 	extern int flags;
 
 	// FIXME: this is temporary
+	// TODO: maybe create a Statistics sub-namespace for the like
 	extern int primitivesRendered;
 
 	// ==============================================================================
@@ -257,7 +262,7 @@ namespace SU
 	//
 	// ==============================================================================
 
-	bool init(SDL_Surface* surface, int f = 0);
+	bool init(SDL_Surface* surface, int f = Flags::DEFAULT);
 
 	void setFlag(int f);
 	void unsetFlag(int f);
