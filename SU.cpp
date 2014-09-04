@@ -377,6 +377,24 @@ namespace SU
 		return (os << v.toString());
 	}
 
+	void Vector::save(std::ostream& o) const
+	{
+		o << 'v' << ' ' << x << ' ' << y << ' ' << z << std::endl;
+	}
+
+	Vector Vector::load(std::istream& i)
+	{
+		Vector v;
+
+		i.ignore(2, ' ');
+
+		i >> v.x;
+		i >> v.y;
+		i >> v.z;
+
+		return v;
+	}
+
 
 
 	Line::Line(Vector p, Vector d) : position(p), direction(d) {}

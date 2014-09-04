@@ -84,6 +84,9 @@ namespace SU
 
 		std::string toString() const;
 		friend std::ostream& operator<<(std::ostream& os, const Vector& v);
+
+		void save(std::ostream& o) const;
+		static Vector load(std::istream& i);
 	};
 
 	class Line

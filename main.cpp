@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <string>
 #include <sstream>
@@ -114,6 +115,30 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 int main( int argc, char* args[] )
 {
+	std::ofstream of;
+	of.open("randomvectors");
+	#define NUM 3
+	SU::Vector vs[NUM];
+	for(int i = 0; i < NUM; i++)
+	{
+		vs[i] = SU::Vector(randDouble(), randDouble(), randDouble());
+		vs[i].save(of);
+	}
+
+	of.close();
+
+	std::ifstream iff;
+	iff.open("randomvectors");
+	SU::Vector ivs[NUM];
+	for(int i = 0; i < NUM; i++)
+		ivs[i] = SU::Vector::load(iff);
+
+	for(int i = 0; i < NUM; i++)
+	{
+		std::cout << vs[i] << std::endl << ivs[i] << std::endl;
+	}
+
+
 	int currentSec = 0;
 	int currentSecFPS = 0;
 	int previousSecFPS = 0;
