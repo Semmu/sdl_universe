@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cmath>
 
-#if 1
+#if 0
 	#define WIDTH 1920
 	#define HEIGHT 1080
 #else
@@ -239,12 +239,12 @@ int main( int argc, char* args[] )
 	SU::Object origo;
 	origo.model = &cube;
 
-	Floating *f = NULL, *ff = NULL, *fff = NULL;
+	Floating *f = NULL, *ff = NULL, *fff = NULL, *ffff = NULL, *fffff = NULL;
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		f = new Floating(true);
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			ff = new Floating(true);
 			ff->obj.X = SU::Vector(0.5, 0, 0);
@@ -252,13 +252,31 @@ int main( int argc, char* args[] )
 			ff->obj.Z = SU::Vector(0, 0, 0.5);
 			f->obj.addChild(&(ff->obj));
 
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				fff = new Floating(true);
 				fff->obj.X = SU::Vector(0.5, 0, 0);
 				fff->obj.Y = SU::Vector(0, 0.5, 0);
 				fff->obj.Z = SU::Vector(0, 0, 0.5);
 				ff->obj.addChild(&(fff->obj));
+
+				for (int i = 0; i < 4; i++)
+				{
+					ffff = new Floating(true);
+					ffff->obj.X = SU::Vector(0.5, 0, 0);
+					ffff->obj.Y = SU::Vector(0, 0.5, 0);
+					ffff->obj.Z = SU::Vector(0, 0, 0.5);
+					fff->obj.addChild(&(ffff->obj));
+
+/*					for (int i = 0; i < 3; i++)
+					{
+						fffff = new Floating(true);
+						fffff->obj.X = SU::Vector(0.5, 0, 0);
+						fffff->obj.Y = SU::Vector(0, 0.5, 0);
+						fffff->obj.Z = SU::Vector(0, 0, 0.5);
+						ffff->obj.addChild(&(fffff->obj));
+					}*/
+				}
 			}
 		}
 	}
@@ -389,7 +407,11 @@ int main( int argc, char* args[] )
 				}
 				break;
 
+				#if USING_SDL1
 				case SDLK_KP1:
+				#else
+				case SDLK_KP_1:
+				#endif
 				{
 					SU::Camera::position -= SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
 				}
@@ -505,7 +527,7 @@ int main( int argc, char* args[] )
 			SDL_RenderPresent(renderer);
 		#endif
 
-		SDL_Delay(1);
+		//SDL_Delay(1);
 	}
 
 	return 0;
