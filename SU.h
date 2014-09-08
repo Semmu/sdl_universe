@@ -209,6 +209,8 @@ namespace SU
 		void rotateAroundX(double angle);
 		void rotateAroundY(double angle);
 		void rotateAroundZ(double angle);
+
+		Uint8 getLevel();
 	};
 
 

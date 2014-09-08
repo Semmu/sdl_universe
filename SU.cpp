@@ -598,6 +598,14 @@ namespace SU
 		Y = Y.rotated(Z, a);
 	}
 
+	Uint8 Object::getLevel()
+	{
+		if (parent == NULL)
+			return 1;
+		else
+			return 1 + parent->getLevel();
+	}
+
 
 
 
@@ -790,7 +798,7 @@ namespace SU
 
 		// also the translation (a.k.a. position) segment
 		if (hasFlag(Flags::DEBUG_TRANSLATIONS))
-			primitivesToRender.push_back(new SU::Segment(Vector(0, 0, 0), o->resultantPosition, SU::mapColor(rand() % 256, rand() % 256, rand() % 256)));
+			primitivesToRender.push_back(new SU::Segment((o->parent == NULL ? Vector(0, 0, 0) : o->parent->resultantPosition), o->resultantPosition, SU::mapColor(o->getLevel() & 0b00000100 ? 255 : 0, o->getLevel() & 0b00000010 ? 255 : 0, o->getLevel() & 0b00000001 ? 255 : 0)));
 
 		for (Primitive* p : o->model->contents)
 		{

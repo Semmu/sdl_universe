@@ -37,7 +37,7 @@
 
 
 const double CAMERA_ROTATION_AMOUNT = 0.01;
-const double CAMERA_MOVEMENT_AMOUNT = 0.1;
+const double CAMERA_MOVEMENT_AMOUNT = 1;
 
 void DIE(const char* reason)
 {
@@ -239,9 +239,28 @@ int main( int argc, char* args[] )
 	SU::Object origo;
 	origo.model = &cube;
 
-	for (int i = 0; i < 100; i++)
+	Floating *f = NULL, *ff = NULL, *fff = NULL;
+
+	for (int i = 0; i < 5; i++)
 	{
-		new Floating(false);
+		f = new Floating(true);
+		for (int i = 0; i < 5; i++)
+		{
+			ff = new Floating(true);
+			ff->obj.X = SU::Vector(0.5, 0, 0);
+			ff->obj.Y = SU::Vector(0, 0.5, 0);
+			ff->obj.Z = SU::Vector(0, 0, 0.5);
+			f->obj.addChild(&(ff->obj));
+
+			for (int i = 0; i < 5; i++)
+			{
+				fff = new Floating(true);
+				fff->obj.X = SU::Vector(0.5, 0, 0);
+				fff->obj.Y = SU::Vector(0, 0.5, 0);
+				fff->obj.Z = SU::Vector(0, 0, 0.5);
+				ff->obj.addChild(&(fff->obj));
+			}
+		}
 	}
 	bool move = false;
 
