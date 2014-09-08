@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cmath>
 
-#if 0
+#if 1
 	#define WIDTH 1920
 	#define HEIGHT 1080
 #else
@@ -42,7 +42,7 @@ const double CAMERA_MOVEMENT_AMOUNT = 0.1;
 void DIE(const char* reason)
 {
 	#if USING_SDL1
-		std::cerr << "[FATAL ERROR]: " << reason;
+		std::cerr << std::endl << "[FATAL ERROR]: " << reason << std::endl << std::endl;
 	#else
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
 							 "FATAL ERROR",
@@ -115,7 +115,7 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 int main( int argc, char* args[] )
 {
-	std::ofstream of;
+/*	std::ofstream of;
 	of.open("randomvectors");
 	#define NUM 3
 	SU::Vector vs[NUM];
@@ -136,12 +136,12 @@ int main( int argc, char* args[] )
 	for(int i = 0; i < NUM; i++)
 	{
 		std::cout << vs[i] << std::endl << ivs[i] << std::endl;
-	}
+	}*/
 
 
-	int currentSec = 0;
-	int currentSecFPS = 0;
-	int previousSecFPS = 0;
+	Uint32 currentSec = 0;
+	Uint32 currentSecFPS = 0;
+	Uint8 previousSecFPS = 0;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	if(TTF_Init() == -1)
@@ -149,9 +149,13 @@ int main( int argc, char* args[] )
 	atexit(SDL_Quit);
 
 	bool running = true;
+	bool fps_visible = true;
+	bool debug_text_visible = true;
+	std::stringstream text;
 
 
 	#if USING_SDL1
+		SDL_ShowCursor(SDL_DISABLE);
 		SDL_Surface *surface = SDL_SetVideoMode(WIDTH, HEIGHT, 32, FLAGS);
 	#else
 		SDL_Window* 	window;
@@ -176,7 +180,7 @@ int main( int argc, char* args[] )
 	SU::init(surface);
 
 
-	TTF_Font *font = TTF_OpenFont("./Deltoid-sans.ttf", 32);
+	TTF_Font *font = TTF_OpenFont("./Instruction.ttf", 20);
 	if (font == NULL)
 		DIE(TTF_GetError());
 
@@ -205,24 +209,24 @@ int main( int argc, char* args[] )
 
 
 	// front
-	house.add(new SU::Triangle(0, 0, 0,		1, 0, 0,	0, 1, 0,	SU::mapColor(200, 200, 50)));
-	house.add(new SU::Triangle(1, 1, 0,		0, 1, 0,	1, 0, 0,	SU::mapColor(200, 200, 50)));
-	house.add(new SU::Triangle(0, 1, 0,		1, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20)));
+	house.add(new SU::Triangle(0, 0, 0,		1, 0, 0,	0, 1, 0,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(1, 1, 0,		0, 1, 0,	1, 0, 0,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(0, 1, 0,		1, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20), true));
 
 	// right
-	house.add(new SU::Triangle(1, 0, 0,		1, 1, 1,	1, 1, 0,	SU::mapColor(150, 150, 30)));
-	house.add(new SU::Triangle(1, 0, 0,		1, 0, 1,	1, 1, 1,	SU::mapColor(150, 150, 30)));
-	house.add(new SU::Triangle(1, 1, 0,		1, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
+	house.add(new SU::Triangle(1, 0, 0,		1, 1, 1,	1, 1, 0,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(1, 0, 0,		1, 0, 1,	1, 1, 1,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(1, 1, 0,		1, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20), true));
 
 	// left
-	house.add(new SU::Triangle(0, 0, 0,		0, 1, 0,	0, 1, 1,	SU::mapColor(150, 150, 30)));
-	house.add(new SU::Triangle(0, 0, 0,		0, 1, 1,	0, 0, 1,	SU::mapColor(150, 150, 30)));
-	house.add(new SU::Triangle(0, 1, 1,		0, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(100, 20, 20)));
+	house.add(new SU::Triangle(0, 0, 0,		0, 1, 0,	0, 1, 1,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(0, 0, 0,		0, 1, 1,	0, 0, 1,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(0, 1, 1,		0, 1, 0,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20), true));
 
 	// back
-	house.add(new SU::Triangle(0, 0, 1,		0, 1, 1,	1, 1, 1,	SU::mapColor(80, 80, 10)));
-	house.add(new SU::Triangle(0, 0, 1,		1, 1, 1,	1, 0, 1,	SU::mapColor(80, 80, 10)));
-	house.add(new SU::Triangle(1, 1, 1,		0, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(50, 10, 10)));
+	house.add(new SU::Triangle(0, 0, 1,		0, 1, 1,	1, 1, 1,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(0, 0, 1,		1, 1, 1,	1, 0, 1,	SU::mapColor(200, 200, 50), true));
+	house.add(new SU::Triangle(1, 1, 1,		0, 1, 1,	0.5, 1.5, 0.5,	SU::mapColor(150, 20, 20), true));
 
 	// bottom
 	house.add(new SU::Triangle(0, 0, 0,		0, 0, 1,	1, 0, 0,	SU::mapColor(10, 20, 50)));
@@ -235,16 +239,23 @@ int main( int argc, char* args[] )
 	SU::Object origo;
 	origo.model = &cube;
 
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		new Floating(false);
 	}
 	bool move = false;
 
-	SU::Camera::position.z = -3;
+	SU::Camera::position.z = -30;
 
 	while (running)
 	{
+		if (SDL_GetTicks() / 1000 != currentSec)
+		{
+			currentSec++;
+			previousSecFPS = currentSecFPS;
+			currentSecFPS = 0;
+		}
+
 		SDL_Event e;
 
 		while(SDL_PollEvent(&e) != 0)
@@ -281,20 +292,32 @@ int main( int argc, char* args[] )
 								move = !move;
 							break;
 
-							case SDLK_t:
-								SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
+							case SDLK_0:
+								debug_text_visible = !debug_text_visible;
 							break;
 
-							case SDLK_f:
+							case SDLK_F1:
 								SU::toggleFlag(SU::Flags::DEBUG_WIREFRAMING);
 							break;
 
-							case SDLK_c:
+							case SDLK_F2:
+								SU::toggleFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
+							break;
+
+							case SDLK_F3:
+								SU::toggleFlag(SU::Flags::DEBUG_TRANSLATIONS);
+							break;
+
+							case SDLK_F4:
 								SU::toggleFlag(SU::Flags::ONLY_FACING_TRIANGLES);
 							break;
 
-							case SDLK_v:
+							case SDLK_F5:
 								SU::toggleFlag(SU::Flags::DEPTH_SORT);
+							break;
+
+							case SDLK_F6:
+								SU::toggleFlag(SU::Flags::LIGHTING);
 							break;
 
 							default:
@@ -400,24 +423,56 @@ int main( int argc, char* args[] )
 				f->move();
 
 		SU::render();
-
-		if (SDL_GetTicks() / 1000 != currentSec)
-		{
-			currentSec++;
-			previousSecFPS = currentSecFPS;
-			currentSecFPS = 0;
-		}
 		currentSecFPS++;
 
-		SDL_Color c = {128, 128, 128};
-		std::stringstream fps;
-		fps << " " << previousSecFPS << " FPS     " << SU::primitivesRendered;
-		SDL_Surface *text = TTF_RenderText_Solid(font, fps.str().c_str(), c);
-		if (text == NULL)
-			DIE(TTF_GetError());
+		SDL_Color c = {150, 150, 150};
+		if (fps_visible)
+		{
+			text.str(std::string());
+			text.clear();
 
-		SDL_BlitSurface(text, NULL, surface, NULL);
-		SDL_FreeSurface(text);
+			text << (int)previousSecFPS;
+
+			SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.str().c_str(), c);
+
+			if (textSurface != NULL)
+			{
+				SDL_Rect r;
+				r.x = 10;
+				r.y = 10;
+				SDL_BlitSurface(textSurface, NULL, surface, &r);
+				SDL_FreeSurface(textSurface);
+			}
+		}
+
+		if(debug_text_visible)
+		{
+			text.str(std::string());
+			text.clear();
+
+			text << "F1 [" << (SU::hasFlag(SU::Flags::DEBUG_WIREFRAMING) ? '+' : ' ' ) << "] DEBUG_WIREFRAMING" << std::endl <<
+					"F2 [" << (SU::hasFlag(SU::Flags::DEBUG_TRANSFORMATIONS) ? '+' : ' ' ) << "] DEBUG_TRANSFORMATIONS" << std::endl <<
+					"F3 [" << (SU::hasFlag(SU::Flags::DEBUG_TRANSLATIONS) ? '+' : ' ' ) << "] DEBUG_TRANSLATIONS" << std::endl <<
+					"F4 [" << (SU::hasFlag(SU::Flags::ONLY_FACING_TRIANGLES) ? '+' : ' ' ) << "] ONLY_FACING_TRIANGLES" << std::endl <<
+					"F5 [" << (SU::hasFlag(SU::Flags::DEPTH_SORT) ? '+' : ' ' ) << "] DEPTH_SORT" << std::endl <<
+					"F6 [" << (SU::hasFlag(SU::Flags::LIGHTING) ? '+' : ' ' ) << "] LIGHTING";
+
+			std::string line;
+			SDL_Rect r;
+			r.x = 10;
+			r.y = surface->h - 40;
+			while(std::getline(text, line, '\n'))
+			{
+				SDL_Surface *textSurface = TTF_RenderText_Solid(font, line.c_str(), c);
+				if (textSurface != NULL)
+				{
+					SDL_BlitSurface(textSurface, NULL, surface, &r);
+					SDL_FreeSurface(textSurface);
+				}
+
+				r.y -= 30;
+			}
+		}
 
 		#if USING_SDL1
 			SDL_Flip(surface);
@@ -431,7 +486,7 @@ int main( int argc, char* args[] )
 			SDL_RenderPresent(renderer);
 		#endif
 
-//		SDL_Delay(10);
+		SDL_Delay(1);
 	}
 
 	return 0;

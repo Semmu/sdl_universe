@@ -172,6 +172,14 @@ namespace SU
 	//
 	// ==============================================================================
 
+
+	int bgColor = 0;
+	int flags = 0;
+
+	// FIXME: this is temporary
+	int primitivesRendered = 0;
+
+
 	namespace Camera
 	{
 		int FOV = 60;
@@ -201,11 +209,18 @@ namespace SU
 		}
 	}
 
-	int bgColor = 0;
-	int flags = 0;
+	namespace GlobalLight
+	{
+		Vector direction = Vector(-0.0, -0.0, -1);
+		int color = 0x00ff00ff;
 
-	// FIXME: this is temporary
-	int primitivesRendered = 0;
+		namespace Ambient
+		{
+			int color = 0xffffffff;
+		}
+	}
+
+
 
 
 	// ==============================================================================
@@ -517,11 +532,11 @@ namespace SU
 
 
 
-	Triangle::Triangle(Vector p1, Vector p2, Vector p3, int c) : Primitive(c), P1(p1), P2(p2), P3(p3) {}
+	Triangle::Triangle(Vector p1, Vector p2, Vector p3, int c, bool l) : Primitive(c), P1(p1), P2(p2), P3(p3), lighted(l) {}
 
 	Triangle::Triangle(double x1, double y1, double z1,
 					   double x2, double y2, double z2,
-					   double x3, double y3, double z3, int c) : Primitive(c)
+					   double x3, double y3, double z3, int c, bool l) : Primitive(c), lighted(l)
 	{
 		P1 = Vector(x1, y1, z1);
 		P2 = Vector(x2, y2, z2);
@@ -620,9 +635,43 @@ namespace SU
 		flags ^= f;
 	}
 
+	bool hasFlag(int f)
+	{
+		return (flags & f);
+	}
+
 	int mapColor(int r, int g, int b)
 	{
 		return SDL_MapRGB(surface->format, r, g, b);
+	}
+
+	Uint32 computeColor(Uint32 c, const Vector& dir)
+	{
+		Uint8 r, g, b;
+		SDL_GetRGB(c, surface->format, &r, &g, &b);
+		double primitiveR = r / 256.0,
+			   primitiveG = g / 256.0,
+			   primitiveB = b / 256.0;
+
+		SDL_GetRGB(GlobalLight::color, surface->format, &r, &g, &b);
+		double globalR = r / 256.0,
+			   globalG = g / 256.0,
+			   globalB = b / 256.0;
+
+		SDL_GetRGB(GlobalLight::Ambient::color, surface->format, &r, &g, &b);
+		double ambientR = r / 256.0,
+			   ambientG = g / 256.0,
+			   ambientB = b / 256.0;
+
+		double facingAmount = dir.angleTo(GlobalLight::direction) / M_PI;
+
+		#define FORMULA(prim, amb, glob) (prim * glob * facingAmount * 256 + prim * amb)
+
+		r = FORMULA(primitiveR, globalR, ambientR);
+		g = FORMULA(primitiveG, globalG, ambientG);
+		b = FORMULA(primitiveB, globalB, ambientB);
+
+		return mapColor(r, g, b);
 	}
 
 
@@ -719,8 +768,10 @@ namespace SU
 			o->resultantZ = o->Z.transform(o->parent->resultantX, o->parent->resultantY, o->parent->resultantZ);
 		}
 
-		if (flags & Flags::DEBUG_TRANSFORMATIONS)
+		if (hasFlag(Flags::DEBUG_TRANSFORMATIONS))
 		{
+			// we will draw the transformation axes
+
 			if (o->transforming)
 			{
 				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, o->resultantX + o->resultantPosition, SU::mapColor(255, 0, 0)));
@@ -735,9 +786,11 @@ namespace SU
 				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(0, 1, 0) + o->resultantPosition, SU::mapColor(0, 255, 0)));
 				primitivesToRender.push_back(new SU::Segment(o->resultantPosition, Vector(0, 0, 1) + o->resultantPosition, SU::mapColor(0, 0, 255)));
 			}
-
-			primitivesToRender.push_back(new SU::Segment(Vector(0, 0, 0), o->resultantPosition, SU::mapColor(50, 50, 50)));
 		}
+
+		// also the translation (a.k.a. position) segment
+		if (hasFlag(Flags::DEBUG_TRANSLATIONS))
+			primitivesToRender.push_back(new SU::Segment(Vector(0, 0, 0), o->resultantPosition, SU::mapColor(rand() % 256, rand() % 256, rand() % 256)));
 
 		for (Primitive* p : o->model->contents)
 		{
@@ -790,17 +843,20 @@ namespace SU
 						t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
 											 static_cast<SU::Triangle*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
 											 static_cast<SU::Triangle*>(p)->P3.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-											 p->color);
+											 p->color, static_cast<SU::Triangle*>(p)->lighted);
 					}
 					else
 					{
 						t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1 + o->resultantPosition,
 											 static_cast<SU::Triangle*>(p)->P2 + o->resultantPosition,
 											 static_cast<SU::Triangle*>(p)->P3 + o->resultantPosition,
-											 p->color);
+											 p->color, static_cast<SU::Triangle*>(p)->lighted);
 					}
 
-					primitivesToRender.push_back(t);
+					if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
+						primitivesToRender.push_back(t);
+					else
+						delete t;
 				}
 				break;
 
@@ -872,7 +928,7 @@ namespace SU
 		 *
 		 */
 
-		 if (flags & Flags::DEPTH_SORT)
+		 if (hasFlag(Flags::DEPTH_SORT))
 			 primitivesToRender.sort(sortPrimitivesNearToFar);
 
 
@@ -887,8 +943,6 @@ namespace SU
 		{
 			if (isOnScreen(p))
 			{
-				primitivesRendered++;
-
 				switch (p->getType())
 				{
 					case SU::Primitive::Type::POINT:
@@ -896,6 +950,8 @@ namespace SU
 						Point* pt = static_cast<Point*>(p);
 						SDL_Point sp = positionOnScreen(pt->P1);
 						point(surface, sp, pt->color);
+
+						primitivesRendered++;
 					}
 					break;
 
@@ -905,6 +961,8 @@ namespace SU
 						SDL_Point p1 = positionOnScreen(l->P1);
 						SDL_Point p2 = positionOnScreen(l->P2);
 						line(surface, p1, p2, p->color);
+
+						primitivesRendered++;
 					}
 					break;
 
@@ -912,21 +970,24 @@ namespace SU
 					{
 						Triangle* t = static_cast<Triangle*>(p);
 
-						if ((flags & Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
+						if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
 						{
 							SDL_Point p1 = positionOnScreen(t->P1);
 							SDL_Point p2 = positionOnScreen(t->P2);
 							SDL_Point p3 = positionOnScreen(t->P3);
 
-							if (flags & Flags::DEBUG_WIREFRAMING)
+							if (hasFlag(Flags::DEBUG_WIREFRAMING))
 							{
 								line(surface, p1, p2, p->color);
 								line(surface, p1, p3, p->color);
 								line(surface, p3, p2, p->color);
+
+								primitivesRendered += 3;
 							}
 							else
 							{
-								tri(surface, p1, p2, p3, p->color);
+								tri(surface, p1, p2, p3, (hasFlag(Flags::LIGHTING) && t->lighted) ? computeColor(t->color, t->getDirection()) : t->color);
+								primitivesRendered++;
 							}
 						}
 					}

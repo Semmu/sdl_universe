@@ -5,6 +5,7 @@
 
 # the binary
 sdl_universe
+*.sublime*
 
 ### C++ ###
 # Compiled Object files

@@ -163,11 +163,12 @@ namespace SU
 	{
 	public:
 		Vector P1, P2, P3;
+		bool lighted;
 
-		Triangle(Vector p1, Vector p2, Vector p3, int c = WHITE);
+		Triangle(Vector p1, Vector p2, Vector p3, int c = WHITE, bool l = false);
 		Triangle(double x1, double y1, double z1,
 				 double x2, double y2, double z2,
-				 double x3, double y3, double z3, int c = WHITE);
+				 double x3, double y3, double z3, int c = WHITE, bool l = false);
 
 		Type getType() const;
 		Vector getCenter() const;
@@ -211,6 +212,38 @@ namespace SU
 	};
 
 
+
+
+	// ==============================================================================
+	//
+	// 		PUBLICLY ACCESSIBLE VARIABLE DECLARATIONS
+	//
+	// ==============================================================================
+
+	enum Flags
+	{
+		DEBUG_WIREFRAMING =			0b1,
+		DEBUG_TRANSFORMATIONS =		0b10,
+		DEBUG_TRANSLATIONS =		0b100,
+		ONLY_FACING_TRIANGLES = 	0b1000,
+		DEPTH_SORT =				0b10000,
+		LIGHTING =					0b100000,
+//		GLOBAL_LIGHT =				0b10000,
+//		LOCAL_LIGHTS,
+//		BIG_CHUNK_SPLITTING,
+//		COLLISION_SPLITTING,
+//		Z_BUFFER_SORT
+		DEFAULT =					ONLY_FACING_TRIANGLES | DEPTH_SORT
+	};
+
+	extern int bgColor;
+	extern int flags;
+
+
+	// FIXME: this is temporary
+	// TODO: maybe create a Statistics sub-namespace for the like
+	extern int primitivesRendered;
+
 	namespace Camera
 	{
 		extern int FOV;
@@ -228,36 +261,16 @@ namespace SU
 		void yaw(double a);
 	}
 
-
-
-
-
-	// ==============================================================================
-	//
-	// 		PUBLICLY ACCESSIBLE VARIABLE DECLARATIONS
-	//
-	// ==============================================================================
-
-	enum Flags
+	namespace GlobalLight
 	{
-		DEBUG_WIREFRAMING =			0b1,
-		DEBUG_TRANSFORMATIONS =		0b10,
-		ONLY_FACING_TRIANGLES = 	0b100,
-		DEPTH_SORT =				0b1000,
-//		GLOBAL_LIGHT,
-//		LOCAL_LIGHTS,
-//		BIG_CHUNK_SPLITTING,
-//		COLLISION_SPLITTING,
-//		Z_BUFFER_SORT
-		DEFAULT =					ONLY_FACING_TRIANGLES | DEPTH_SORT
-	};
+		extern Vector direction;
+		extern int color;
 
-	extern int bgColor;
-	extern int flags;
-
-	// FIXME: this is temporary
-	// TODO: maybe create a Statistics sub-namespace for the like
-	extern int primitivesRendered;
+		namespace Ambient
+		{
+			extern int color;
+		}
+	}
 
 	// ==============================================================================
 	//
@@ -270,6 +283,7 @@ namespace SU
 	void setFlag(int f);
 	void unsetFlag(int f);
 	void toggleFlag(int f);
+	bool hasFlag(int f);
 
 	int mapColor(int r, int g, int b);
 
