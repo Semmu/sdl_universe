@@ -211,7 +211,7 @@ namespace SU
 
 	namespace GlobalLight
 	{
-		Vector direction = Vector(-0.0, -0.0, -1);
+		Vector direction = Vector(-1, -1, -1);
 		int color = 0x00ff00ff;
 
 		namespace Ambient
@@ -562,14 +562,38 @@ namespace SU
 
 
 
+	Quad::Quad(Vector p1, Vector p2, Vector p3, Vector p4, int c, bool l) : P1(p1), P2(p2), P3(p3), P4(p4), color(c), lighted(l) {}
+
+	Quad::Quad(double x1, double y1, double z1,
+			   double x2, double y2, double z2,
+			   double x3, double y3, double z3,
+			   double x4, double y4, double z4, int c, bool l) : color(c), lighted(l)
+	{
+		P1 = Vector(x1, y1, z1);
+		P2 = Vector(x2, y2, z2);
+		P3 = Vector(x3, y3, z3);
+		P4 = Vector(x4, y4, z4);
+	}
+
+
+
+
 	void Model::add(Primitive* p)
 	{
 		contents.push_back(p);
 	}
 
+	void Model::add(Quad* q)
+	{
+		add(new Triangle(q->P1, q->P2, q->P3, q->color, q->lighted));
+		add(new Triangle(q->P1, q->P3, q->P4, q->color, q->lighted));
+
+		delete q;
+	}
 
 
-	Object::Object() : enabled(true), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
+
+	Object::Object() : enabled(true), model(NULL), position(Vector(0, 0, 0)), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
 	{
 		everyObject.push_back(this);
 	}
@@ -800,75 +824,78 @@ namespace SU
 		if (hasFlag(Flags::DEBUG_TRANSLATIONS))
 			primitivesToRender.push_back(new SU::Segment((o->parent == NULL ? Vector(0, 0, 0) : o->parent->resultantPosition), o->resultantPosition, SU::mapColor(o->getLevel() & 0b00000100 ? 255 : 0, o->getLevel() & 0b00000010 ? 255 : 0, o->getLevel() & 0b00000001 ? 255 : 0)));
 
-		for (Primitive* p : o->model->contents)
+		if (o->model != NULL)
 		{
-			switch(p->getType())
+			for (Primitive* p : o->model->contents)
 			{
-				case SU::Primitive::Type::POINT:
+				switch(p->getType())
 				{
-					SU::Point *pt;
-
-					if (o->transforming)
+					case SU::Primitive::Type::POINT:
 					{
-						pt = new SU::Point(static_cast<SU::Point*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition), p->color);
-					}
-					else
-					{
-						pt = new SU::Point(static_cast<SU::Point*>(p)->P1 + o->resultantPosition);
-					}
+						SU::Point *pt;
 
-					primitivesToRender.push_back(pt);
+						if (o->transforming)
+						{
+							pt = new SU::Point(static_cast<SU::Point*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition), p->color);
+						}
+						else
+						{
+							pt = new SU::Point(static_cast<SU::Point*>(p)->P1 + o->resultantPosition);
+						}
+
+						primitivesToRender.push_back(pt);
+					}
+					break;
+
+					case SU::Primitive::Type::SEGMENT:
+					{
+						SU::Segment *l;
+
+						if (o->transforming)
+						{
+							l = new SU::Segment(static_cast<SU::Segment*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+												static_cast<SU::Segment*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+												p->color);
+						}
+						else
+						{
+							l = new SU::Segment(static_cast<SU::Segment*>(p)->P1 + o->resultantPosition,
+												static_cast<SU::Segment*>(p)->P2 + o->resultantPosition,
+												p->color);
+						}
+
+						primitivesToRender.push_back(l);
+					}
+					break;
+
+					case SU::Primitive::Type::TRIANGLE:
+					{
+						SU::Triangle *t;
+
+						if (o->transforming)
+						{
+							t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+												 static_cast<SU::Triangle*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+												 static_cast<SU::Triangle*>(p)->P3.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
+												 p->color, static_cast<SU::Triangle*>(p)->lighted);
+						}
+						else
+						{
+							t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1 + o->resultantPosition,
+												 static_cast<SU::Triangle*>(p)->P2 + o->resultantPosition,
+												 static_cast<SU::Triangle*>(p)->P3 + o->resultantPosition,
+												 p->color, static_cast<SU::Triangle*>(p)->lighted);
+						}
+
+						if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
+							primitivesToRender.push_back(t);
+						else
+							delete t;
+					}
+					break;
+
+					default: break;
 				}
-				break;
-
-				case SU::Primitive::Type::SEGMENT:
-				{
-					SU::Segment *l;
-
-					if (o->transforming)
-					{
-						l = new SU::Segment(static_cast<SU::Segment*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-											static_cast<SU::Segment*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-											p->color);
-					}
-					else
-					{
-						l = new SU::Segment(static_cast<SU::Segment*>(p)->P1 + o->resultantPosition,
-											static_cast<SU::Segment*>(p)->P2 + o->resultantPosition,
-											p->color);
-					}
-
-					primitivesToRender.push_back(l);
-				}
-				break;
-
-				case SU::Primitive::Type::TRIANGLE:
-				{
-					SU::Triangle *t;
-
-					if (o->transforming)
-					{
-						t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-											 static_cast<SU::Triangle*>(p)->P2.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-											 static_cast<SU::Triangle*>(p)->P3.transform(o->resultantX, o->resultantY, o->resultantZ, o->resultantPosition),
-											 p->color, static_cast<SU::Triangle*>(p)->lighted);
-					}
-					else
-					{
-						t = new SU::Triangle(static_cast<SU::Triangle*>(p)->P1 + o->resultantPosition,
-											 static_cast<SU::Triangle*>(p)->P2 + o->resultantPosition,
-											 static_cast<SU::Triangle*>(p)->P3 + o->resultantPosition,
-											 p->color, static_cast<SU::Triangle*>(p)->lighted);
-					}
-
-					if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
-						primitivesToRender.push_back(t);
-					else
-						delete t;
-				}
-				break;
-
-				default: break;
 			}
 		}
 

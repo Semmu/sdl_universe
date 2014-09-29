@@ -178,12 +178,34 @@ namespace SU
 		~Triangle();
 	};
 
+	// convenience only feature
+	class Quad
+	{
+	public:
+		Vector P1, P2, P3, P4;
+		int color;
+		bool lighted;
+
+		Quad(Vector, Vector, Vector, Vector, int c = WHITE, bool l = false);
+		Quad(double x1, double y1, double z1,
+			 double x2, double y2, double z2,
+			 double x3, double y3, double z3,
+			 double x4, double y4, double z4, int c = WHITE, bool l = false);
+	};
+
 	class Model
 	{
 	public:
 		std::list<Primitive*> contents;
 
 		void add(Primitive* p);
+		void add(Quad* q);
+
+		// inmediate OpenGL-like methods, TODO
+		void begin();
+		void add(Vector v);
+		void add(double, double, double);
+		void end();
 	};
 
 	class Object

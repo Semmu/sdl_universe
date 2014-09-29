@@ -37,7 +37,7 @@
 
 
 const double CAMERA_ROTATION_AMOUNT = 0.01;
-const double CAMERA_MOVEMENT_AMOUNT = 1;
+const double CAMERA_MOVEMENT_AMOUNT = 0.1;
 
 void DIE(const char* reason)
 {
@@ -157,6 +157,7 @@ int main( int argc, char* args[] )
 	#if USING_SDL1
 		SDL_ShowCursor(SDL_DISABLE);
 		SDL_Surface *surface = SDL_SetVideoMode(WIDTH, HEIGHT, 32, FLAGS);
+		SDL_WarpMouse(WIDTH / 2, HEIGHT / 2);
 	#else
 		SDL_Window* 	window;
 		SDL_Renderer* 	renderer;
@@ -178,6 +179,7 @@ int main( int argc, char* args[] )
 	#endif
 
 	SU::init(surface);
+	SU::setFlag(SU::Flags::LIGHTING);
 
 
 	TTF_Font *font = TTF_OpenFont("./Instruction.ttf", 20);
@@ -236,15 +238,15 @@ int main( int argc, char* args[] )
 
 
 
-	SU::Object origo;
-	origo.model = &cube;
+//	SU::Object origo;
+//	origo.model = &cube;
 
 	Floating *f = NULL, *ff = NULL, *fff = NULL, *ffff = NULL, *fffff = NULL;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 100; i++)
 	{
-		f = new Floating(true);
-		for (int i = 0; i < 4; i++)
+		f = new Floating(false);
+/*		for (int i = 0; i < 4; i++)
 		{
 			ff = new Floating(true);
 			ff->obj.X = SU::Vector(0.5, 0, 0);
@@ -276,13 +278,101 @@ int main( int argc, char* args[] )
 						fffff->obj.Z = SU::Vector(0, 0, 0.5);
 						ffff->obj.addChild(&(fffff->obj));
 					}*/
-				}
-			}
-		}
+//				}
+//			}
+//		}
 	}
 	bool move = false;
 
 	SU::Camera::position.z = -30;
+
+
+
+
+
+
+	// SHIP HERE
+
+	SU::Model hajtomu;
+	const int reszletesseg = 6;
+	for (int i = 0; i < reszletesseg; i++)
+	{
+		SU::Vector a(0, 1, 0), b(-2, 0.5, 0), x(1, 0, 0);
+		hajtomu.add(new SU::Quad(b.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 a.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 a.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+								 b.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(100, 100, 100), true));
+
+		SU::Vector aa(-2, 0.5, 0), bb(-1.9, 0.2, 0);
+		hajtomu.add(new SU::Quad(bb.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 aa.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 aa.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+								 bb.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(250, 50, 50), false));
+
+		SU::Vector aaa(-1.9, 0.2, 0), bbb(-3, 0, 0);
+		hajtomu.add(new SU::Quad(bbb.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 aaa.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 aaa.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+								 bbb.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(250, 250, 50), false));
+
+		SU::Vector c(0, 1, 0), d(1, 0.8, 0);
+		hajtomu.add(new SU::Quad(c.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 d.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 d.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+								 c.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(100, 100, 100), true));
+
+		SU::Vector cc(1, 0.8, 0), dd(1.1, 0.7, 0);
+		hajtomu.add(new SU::Quad(cc.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 dd.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 dd.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+								 cc.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(50, 100, 220), false));
+
+		SU::Vector ccc(1.1, 0.7, 0), ddd(0.5, 0, 0);
+		hajtomu.add(new SU::Quad(ccc.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 ddd.rotated(x, M_PI / reszletesseg * 2 * (i)),
+								 ddd.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+								 ccc.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(30, 30, 30), true));
+	}
+
+	SU::Model torzs;
+	torzs.add(new SU::Quad(SU::Vector(3, 0, 0), SU::Vector(3, 0, 1), SU::Vector(0, 1, 1), SU::Vector(0, 1, 0), SU::mapColor(100, 100, 100), true));
+	torzs.add(new SU::Quad(SU::Vector(3, 0, 0), SU::Vector(3.2, -0.5, 0), SU::Vector(3.2, -0.5, 1), SU::Vector(3, 0, 1), SU::mapColor(100, 100, 100), true));
+	torzs.add(new SU::Quad(SU::Vector(3, 0, 1), SU::Vector(3.2, -0.5, 1), SU::Vector(0, -0.5, 2), SU::Vector(0, 0, 2), SU::mapColor(100, 100, 100), true));
+	torzs.add(new SU::Triangle(SU::Vector(3, 0, 1), SU::Vector(0, 0, 2), SU::Vector(0, 1, 1), SU::mapColor(100, 100, 100), true));
+
+
+	SU::Object torzsObject;
+	torzsObject.model = &torzs;
+	SU::Object torzsTukor;
+	torzsTukor.model = &torzs;
+	torzsTukor.transforming = true;
+	torzsTukor.Z.z = -1;
+
+
+
+
+	SU::Object ship, h1, h2, h3, h4;
+
+	h1.model = &hajtomu;
+	h1.position = SU::Vector(0, 3, 4);
+	h2.model = &hajtomu;
+	h2.position = SU::Vector(0, 3, -4);
+	h3.model = &hajtomu;
+	h3.position = SU::Vector(0, -3, -4);
+	h4.model = &hajtomu;
+	h4.position = SU::Vector(0, -3, 4);
+
+	ship.addChild(&h1);
+	ship.addChild(&h2);
+	ship.addChild(&h3);
+	ship.addChild(&h4);
+	ship.addChild(&torzsObject);
+
+
+
+
+
+
 
 	while (running)
 	{
@@ -362,6 +452,26 @@ int main( int argc, char* args[] )
 							break;
 						}
 					}
+				}
+				break;
+
+				case SDL_MOUSEMOTION:
+				{
+					int xdiff = e.motion.x - WIDTH / 2;
+					int ydiff = e.motion.y - HEIGHT / 2;
+
+					if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1))
+					{
+						SU::Camera::position -= SU::Camera::upDirection / 100 * ydiff;
+						SU::Camera::position += SU::Camera::rightDirection / 100 * xdiff;
+					}
+					else
+					{
+						SU::Camera::yaw(xdiff * 0.001);
+						SU::Camera::pitch(ydiff * 0.001);
+					}
+
+					SDL_WarpMouse(WIDTH / 2, HEIGHT / 2);
 				}
 				break;
 
