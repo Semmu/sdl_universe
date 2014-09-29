@@ -36,7 +36,7 @@
 
 
 
-const double CAMERA_ROTATION_AMOUNT = 0.01;
+const double CAMERA_ROTATION_AMOUNT = 0.005;
 const double CAMERA_MOVEMENT_AMOUNT = 0.1;
 
 void DIE(const char* reason)
@@ -243,7 +243,7 @@ int main( int argc, char* args[] )
 
 	Floating *f = NULL, *ff = NULL, *fff = NULL, *ffff = NULL, *fffff = NULL;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 0; i++)
 	{
 		f = new Floating(false);
 /*		for (int i = 0; i < 4; i++)
@@ -301,7 +301,7 @@ int main( int argc, char* args[] )
 		hajtomu.add(new SU::Quad(b.rotated(x, M_PI / reszletesseg * 2 * (i)),
 								 a.rotated(x, M_PI / reszletesseg * 2 * (i)),
 								 a.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
-								 b.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(100, 100, 100), true));
+								 b.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(30, 30, 30), true));
 
 		SU::Vector aa(-2, 0.5, 0), bb(-1.9, 0.2, 0);
 		hajtomu.add(new SU::Quad(bb.rotated(x, M_PI / reszletesseg * 2 * (i)),
@@ -337,16 +337,60 @@ int main( int argc, char* args[] )
 	SU::Model torzs;
 	torzs.add(new SU::Quad(SU::Vector(3, 0, 0), SU::Vector(3, 0, 1), SU::Vector(0, 1, 1), SU::Vector(0, 1, 0), SU::mapColor(100, 100, 100), true));
 	torzs.add(new SU::Quad(SU::Vector(3, 0, 0), SU::Vector(3.2, -0.5, 0), SU::Vector(3.2, -0.5, 1), SU::Vector(3, 0, 1), SU::mapColor(100, 100, 100), true));
-	torzs.add(new SU::Quad(SU::Vector(3, 0, 1), SU::Vector(3.2, -0.5, 1), SU::Vector(0, -0.5, 2), SU::Vector(0, 0, 2), SU::mapColor(100, 100, 100), true));
-	torzs.add(new SU::Triangle(SU::Vector(3, 0, 1), SU::Vector(0, 0, 2), SU::Vector(0, 1, 1), SU::mapColor(100, 100, 100), true));
+	torzs.add(new SU::Quad(SU::Vector(3, 0, 1), SU::Vector(3.2, -0.5, 1), SU::Vector(0, -0.5, 2), SU::Vector(0, 0, 2), SU::mapColor(30, 30, 30), true));
+	torzs.add(new SU::Triangle(SU::Vector(3, 0, 1), SU::Vector(0, 0, 2), SU::Vector(0, 1, 1), SU::mapColor(30, 30, 30), true));
 
 
 	SU::Object torzsObject;
 	torzsObject.model = &torzs;
+
 	SU::Object torzsTukor;
 	torzsTukor.model = &torzs;
 	torzsTukor.transforming = true;
+	torzsTukor.flipTriangles = true;
 	torzsTukor.Z.z = -1;
+
+	SU::Object torzsHatul;
+	torzsHatul.model = &torzs;
+	torzsHatul.transforming = true;
+	torzsHatul.flipTriangles = true;
+	torzsHatul.X.x = -2;
+
+	SU::Object torzsHatulT;
+	torzsHatulT.model = &torzs;
+	torzsHatulT.transforming = true;
+	torzsHatulT.Z.z = -1;
+	torzsHatulT.X.x = -2;
+
+	SU::Object torzslent;
+	torzslent.model = &torzs;
+	torzslent.transforming = true;
+	torzslent.flipTriangles = true;
+	torzslent.Y.y = -0.3;
+	torzslent.position.y = -0.644444;
+
+	SU::Object tlenttukor;
+	tlenttukor.model = &torzs;
+	tlenttukor.transforming = true;
+	tlenttukor.Y.y = -0.3;
+	tlenttukor.Z.z = -1;
+	tlenttukor.position.y = -0.644444;
+
+	SU::Object tlenthatul;
+	tlenthatul.model = &torzs;
+	tlenthatul.transforming = true;
+	tlenthatul.Y.y = -0.3;
+	tlenthatul.X.x = -2;
+	tlenthatul.position.y = -0.644444;
+
+	SU::Object tlehatu;
+	tlehatu.model = &torzs;
+	tlehatu.transforming = true;
+	tlehatu.Y.y = -0.3;
+	tlehatu.X.x = -2;
+	tlehatu.Z.z = -1;
+	tlehatu.flipTriangles = true;
+	tlehatu.position.y = -0.644444;
 
 
 
@@ -367,6 +411,13 @@ int main( int argc, char* args[] )
 	ship.addChild(&h3);
 	ship.addChild(&h4);
 	ship.addChild(&torzsObject);
+	ship.addChild(&torzsTukor);
+	ship.addChild(&torzsHatul);
+	ship.addChild(&torzsHatulT);
+	ship.addChild(&torzslent);
+	ship.addChild(&tlenttukor);
+	ship.addChild(&tlenthatul);
+	ship.addChild(&tlehatu);
 
 
 

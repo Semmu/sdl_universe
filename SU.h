@@ -170,6 +170,8 @@ namespace SU
 				 double x2, double y2, double z2,
 				 double x3, double y3, double z3, int c = WHITE, bool l = false);
 
+		void flip();
+
 		Type getType() const;
 		Vector getCenter() const;
 
@@ -213,6 +215,7 @@ namespace SU
 	public:
 		bool enabled;
 
+		bool flipTriangles;
 		Model* model;
 		Vector position;
 

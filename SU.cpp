@@ -543,6 +543,13 @@ namespace SU
 		P3 = Vector(x3, y3, z3);
 	}
 
+	void Triangle::flip()
+	{
+		Vector t = P1;
+		P1 = P2;
+		P2 = t;
+	}
+
 	Primitive::Type Triangle::getType() const
 	{
 		return Primitive::Type::TRIANGLE;
@@ -593,7 +600,7 @@ namespace SU
 
 
 
-	Object::Object() : enabled(true), model(NULL), position(Vector(0, 0, 0)), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
+	Object::Object() : enabled(true), flipTriangles(false), model(NULL), position(Vector(0, 0, 0)), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
 	{
 		everyObject.push_back(this);
 	}
@@ -886,6 +893,9 @@ namespace SU
 												 static_cast<SU::Triangle*>(p)->P3 + o->resultantPosition,
 												 p->color, static_cast<SU::Triangle*>(p)->lighted);
 						}
+
+						if (o->flipTriangles)
+							t->flip();
 
 						if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
 							primitivesToRender.push_back(t);
