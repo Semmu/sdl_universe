@@ -211,7 +211,7 @@ namespace SU
 
 	namespace GlobalLight
 	{
-		Vector direction = Vector(-1, -1, -1);
+		Vector direction = Vector(-1, -1.3, -1.2);
 		int color = 0x00ff00ff;
 
 		namespace Ambient
