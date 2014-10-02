@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cmath>
 
-#if 1
+#if 0
 	#define WIDTH 1920
 	#define HEIGHT 1080
 #else
