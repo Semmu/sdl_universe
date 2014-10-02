@@ -77,7 +77,7 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 bool cameraAutoRotating = true;
 double autoRotationAmount = AUTO_ROTATION_AMOUNT;
-double distance = 1;
+double distance = 0.5;
 double heightAngle = 0.5;
 double rotationAngle = 0;
 
@@ -134,6 +134,7 @@ int main( int argc, char* args[] )
 
 	SU::init(surface);
 	SU::setFlag(SU::Flags::LIGHTING);
+	SU::setFlag(SU::Flags::DEBUG_TRANSFORMATIONS);
 
 
 	TTF_Font *font = TTF_OpenFont("./Instruction.ttf", 20);
@@ -169,39 +170,36 @@ int main( int argc, char* args[] )
 	house.add(new SU::Triangle(1, 0, 1,		1, 0, 0,	0, 0, 1,	SU::mapColor(10, 20, 50)));
 
 
-	SU::Model theory;
-	theory.add(new SU::Segment(0, 0, 0,		6, 2, 4,	SU::mapColor(100, 100, 100)));
-	theory.add(new SU::Segment(0, 0, 0,		6, -2, 4,	SU::mapColor(100, 100, 100)));
-	theory.add(new SU::Segment(0, 0, 0,		6, -2, -4,	SU::mapColor(100, 100, 100)));
-	theory.add(new SU::Segment(0, 0, 0,		6, 2, -4,	SU::mapColor(100, 100, 100)));
+	SU::Object hazak, haz1, haz2, haz3, haz4;
 
-	theory.add(new SU::Segment(1.5, 0.5, 1,		1.5, -0.5, 1,	SU::mapColor(200, 200, 200)));
-	theory.add(new SU::Segment(1.5, -0.5, 1,		1.5, -0.5, -1,	SU::mapColor(200, 200, 200)));
-	theory.add(new SU::Segment(1.5, 0.5, 1,		1.5, 0.5, -1,	SU::mapColor(200, 200, 200)));
-	theory.add(new SU::Segment(1.5, 0.5, -1,		1.5, -0.5, -1,	SU::mapColor(200, 200, 200)));
+	haz1.model = &house;
+	haz2.model = &house;
+	haz3.model = &house;
+	haz4.model = &house;
 
-	theory.add(new SU::Segment(0, 0, 0,		0.5, 0, 0,	SU::mapColor(255, 0, 255)));
-	theory.add(new SU::Segment(0, 0, 0,		0, 0.3, 0,	SU::mapColor(0, 255, 255)));
+	haz1.transforming = true;
+	haz2.transforming = true;
+	haz2.rotateAroundZ(M_PI / 2);
+	haz3.transforming = true;
+	haz3.rotateAroundZ(M_PI);
+	haz4.transforming = true;
+	haz4.rotateAroundZ(M_PI / -2);
 
-	theory.add(new SU::Segment(3, 0.3, 0.3,		0, 0, 0,	SU::mapColor(255, 255, 0)));
-	theory.add(new SU::Segment(3, 0, 0,		0, 0, 0,	SU::mapColor(255, 255, 0)));
-	theory.add(new SU::Segment(3, 0.3, 0,		0, 0, 0,	SU::mapColor(255, 255, 0)));
-	theory.add(new SU::Segment(3, 0, 0.3,		0, 0, 0,	SU::mapColor(255, 255, 0)));
+	haz2.position = SU::Vector(3, 0, 0);
+	haz3.position = SU::Vector(3, 3, 0);
+	haz4.position = SU::Vector(0, 3, 0);
 
-	theory.add(new SU::Quad(1.5, 0, 0,	1.5, 0.15, 0,	1.5, 0.15, 0.15,	1.5, 0, 0.15,	SU::mapColor(255, 255, 0)));
-	theory.add(new SU::Quad(1.5, 0, 0,	1.5, 0, 0.15,	1.5, 0.15, 0.15,	1.5, 0.15, 0,	SU::mapColor(255, 255, 0)));
+	hazak.addChild(&haz1);
+	hazak.addChild(&haz2);
+	hazak.addChild(&haz3);
+	hazak.addChild(&haz4);
 
-
-	SU::Object theoryObj;
-	theoryObj.model = &theory;
-
-	SU::Object ahouse;
-	ahouse.model = &house;
-	ahouse.transforming = true;
-	ahouse.position = SU::Vector(3, 0, 0);
-	ahouse.scale(0.3);
-	theoryObj.addChild(&ahouse);
-
+	SU::Object global;
+	hazak.transforming = true;
+	global.addChild(&hazak);
+	global.transforming = true;
+	hazak.position = SU::Vector(0.1, 0.1, 0.1);
+	hazak.scale(0.3);
 
 	while (running)
 	{
@@ -312,6 +310,14 @@ int main( int argc, char* args[] )
 								{
 									cameraAutoRotating = true;
 								}
+							}
+							break;
+
+							case SDLK_r:
+							{
+								global.X = SU::Vector(1, 0, 0).rotated(SU::Vector(0, 1, 0), randDouble(0.8) - 0.4);
+								global.Y = SU::Vector(0, 1, 0).rotated(SU::Vector(0, 0, 1), randDouble(0.8) - 0.4);
+								global.Z = SU::Vector(0, 0, 1).rotated(SU::Vector(1, 0, 0), randDouble(0.8) - 0.4);
 							}
 							break;
 
