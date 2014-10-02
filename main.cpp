@@ -173,9 +173,7 @@ int main( int argc, char* args[] )
 
 
 	#if USING_SDL1
-		SDL_ShowCursor(SDL_DISABLE);
 		SDL_Surface *surface = SDL_SetVideoMode(WIDTH, HEIGHT, 32, FLAGS);
-		SDL_WarpMouse(WIDTH / 2, HEIGHT / 2);
 	#else
 		SDL_Window* 	window;
 		SDL_Renderer* 	renderer;
@@ -194,6 +192,13 @@ int main( int argc, char* args[] )
 											0x0000FF00,
 											0x000000FF,
 											0xFF000000);
+	#endif
+
+	SDL_ShowCursor(SDL_DISABLE);
+	#if USING_SDL1
+	SDL_WarpMouse(WIDTH / 2, HEIGHT / 2);
+	#else
+	SDL_WarpMouseInWindow(window, WIDTH / 2, HEIGHT / 2);
 	#endif
 
 	SU::init(surface);
@@ -636,7 +641,11 @@ int main( int argc, char* args[] )
 						SU::Camera::pitch(ydiff * 0.001);
 					}
 
+					#if USING_SDL1
 					SDL_WarpMouse(WIDTH / 2, HEIGHT / 2);
+					#else
+					SDL_WarpMouseInWindow(window, WIDTH / 2, HEIGHT / 2);
+					#endif
 				}
 				break;
 
