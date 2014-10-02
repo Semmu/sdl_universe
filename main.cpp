@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cmath>
 
-#if 0
+#if 1
 	#define WIDTH 1920
 	#define HEIGHT 1080
 #else
@@ -112,6 +112,24 @@ std::list<int> pressed_down_keys;
 #else
 std::list<SDL_Keycode> pressed_down_keys;
 #endif
+
+
+/*
+	ORIGO KORULI FORGASHOZ
+ */
+
+#define AUTO_ROTATION_AMOUNT 0.002
+
+bool cameraAutoRotating = true;
+double autoRotationAmount = AUTO_ROTATION_AMOUNT;
+double distance = 3;
+double heightAngle = 0;
+double rotationAngle = 0;
+
+
+
+
+
 
 int main( int argc, char* args[] )
 {
@@ -335,14 +353,15 @@ int main( int argc, char* args[] )
 	}
 
 	SU::Model torzs;
-	torzs.add(new SU::Quad(SU::Vector(3, 0, 0), SU::Vector(3, 0, 1), SU::Vector(0, 1, 1), SU::Vector(0, 1, 0), SU::mapColor(100, 100, 100), true));
-	torzs.add(new SU::Quad(SU::Vector(3, 0, 0), SU::Vector(3.2, -0.5, 0), SU::Vector(3.2, -0.5, 1), SU::Vector(3, 0, 1), SU::mapColor(100, 100, 100), true));
-	torzs.add(new SU::Quad(SU::Vector(3, 0, 1), SU::Vector(3.2, -0.5, 1), SU::Vector(0, -0.5, 2), SU::Vector(0, 0, 2), SU::mapColor(30, 30, 30), true));
-	torzs.add(new SU::Triangle(SU::Vector(3, 0, 1), SU::Vector(0, 0, 2), SU::Vector(0, 1, 1), SU::mapColor(30, 30, 30), true));
+	torzs.add(new SU::Quad(3, 0, 0,		3, 0, 1,		0, 1, 1,		0, 1, 0, SU::mapColor(100, 100, 100), true));
+	torzs.add(new SU::Quad(3, 0, 0,		3.2, -0.5, 0,	3.2, -0.5, 1, 	3, 0, 1, SU::mapColor(100, 100, 100), true));
+	torzs.add(new SU::Quad(3, 0, 1,		3.2, -0.5, 1,	0, -0.5, 2,		0, 0, 2, SU::mapColor(30, 30, 30), true));
+	torzs.add(new SU::Triangle(3, 0, 1,		0, 0, 2,		0, 1, 1, SU::mapColor(30, 30, 30), true));
 
 
 	SU::Object torzsObject;
 	torzsObject.model = &torzs;
+	torzsObject.transforming = true;
 
 	SU::Object torzsTukor;
 	torzsTukor.model = &torzs;
@@ -397,14 +416,60 @@ int main( int argc, char* args[] )
 
 	SU::Object ship, h1, h2, h3, h4;
 
+
+	// BUG! FIXME! gyermek object nem forog, csak ha o is transforming. pedig ettol nem kene fuggnie
 	h1.model = &hajtomu;
+	h1.transforming = true;
 	h1.position = SU::Vector(0, 3, 4);
 	h2.model = &hajtomu;
+	h2.transforming = true;
 	h2.position = SU::Vector(0, 3, -4);
 	h3.model = &hajtomu;
+	h3.transforming = true;
 	h3.position = SU::Vector(0, -3, -4);
 	h4.model = &hajtomu;
+	h4.transforming = true;
 	h4.position = SU::Vector(0, -3, 4);
+
+	SU::Model vaz;
+	vaz.add(new SU::Quad(-1, -1, -1,	1, -1, -1,		1, 1, -1,		-1, 1, -1,	SU::mapColor(30, 30, 30), true));
+	vaz.add(new SU::Quad(-1, -1, 1,		-1, 1, 1,		1, 1, 1,		1, -1, 1,	SU::mapColor(30, 30, 30), true));
+	vaz.add(new SU::Quad(-1, -1, 1,		-1, -1, -1,		-1, 1, -1,		-1, 1, 1,	SU::mapColor(100, 100, 100), true));
+	vaz.add(new SU::Quad(1, -1, -1,		1, -1, 1,		1, 1, 1,		1, 1, -1,	SU::mapColor(100, 100, 100), true));
+
+	SU::Object vaz1;
+	vaz1.model = &vaz;
+	vaz1.transforming = true;
+	vaz1.position = SU::Vector(0, 1.3, 2.6);
+	vaz1.Y.y = 6;
+	vaz1.scale(0.21);
+	vaz1.rotateAroundX(1.4);
+
+	SU::Object vaz2;
+	vaz2.model = &vaz;
+	vaz2.transforming = true;
+	vaz2.position = SU::Vector(0, 1.3, -2.6);
+	vaz2.Y.y = 6;
+	vaz2.scale(0.21);
+	vaz2.rotateAroundX(-1.4);
+
+	SU::Object vaz3;
+	vaz3.model = &vaz;
+	vaz3.transforming = true;
+	vaz3.position = SU::Vector(0, -1.45, -2.65);
+	vaz3.Y.y = 5;
+	vaz3.scale(0.21);
+	vaz3.rotateAroundX(1.4);
+
+	SU::Object vaz4;
+	vaz4.model = &vaz;
+	vaz4.transforming = true;
+	vaz4.position = SU::Vector(0, -1.45, 2.65);
+	vaz4.Y.y = 5;
+	vaz4.scale(0.21);
+	vaz4.rotateAroundX(-1.4);
+
+
 
 	ship.addChild(&h1);
 	ship.addChild(&h2);
@@ -418,7 +483,13 @@ int main( int argc, char* args[] )
 	ship.addChild(&tlenttukor);
 	ship.addChild(&tlenthatul);
 	ship.addChild(&tlehatu);
+	ship.addChild(&vaz1);
+	ship.addChild(&vaz2);
+	ship.addChild(&vaz3);
+	ship.addChild(&vaz4);
 
+	ship.transforming = true;
+	ship.rotateAroundY(M_PI / 2);
 
 
 
@@ -498,6 +569,49 @@ int main( int argc, char* args[] )
 								SU::toggleFlag(SU::Flags::LIGHTING);
 							break;
 
+							case SDLK_LEFT:
+							{
+								if (cameraAutoRotating)
+								{
+									autoRotationAmount -= AUTO_ROTATION_AMOUNT;
+								}
+								else
+								{
+									pressed_down_keys.push_back(SDLK_LEFT);
+								}
+							}
+							break;
+
+							case SDLK_RIGHT:
+							{
+								if (cameraAutoRotating)
+								{
+									autoRotationAmount += AUTO_ROTATION_AMOUNT;
+								}
+								else
+								{
+									pressed_down_keys.push_back(SDLK_RIGHT);
+								}
+							}
+							break;
+
+							case SDLK_RETURN:
+							{
+								if (cameraAutoRotating)
+								{
+									SU::Camera::position = SU::Vector(0, 0, -30);
+									SU::Camera::lookDirection = SU::Vector(0, 0, 1);
+									SU::Camera::upDirection = SU::Vector(0, 1, 0);
+
+									cameraAutoRotating = false;
+								}
+								else
+								{
+									cameraAutoRotating = true;
+								}
+							}
+							break;
+
 							default:
 								pressed_down_keys.push_back(e.key.keysym.sym);
 							break;
@@ -552,19 +666,40 @@ int main( int argc, char* args[] )
 
 				case SDLK_DOWN:
 				{
-					SU::Camera::position -= SU::Camera::lookDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					if (cameraAutoRotating)
+					{
+						distance += 0.01;
+					}
+					else
+					{
+						SU::Camera::position -= SU::Camera::lookDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					}
 				}
 				break;
 
 				case SDLK_UP:
 				{
-					SU::Camera::position += SU::Camera::lookDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					if (cameraAutoRotating)
+					{
+						distance -= 0.01;
+					}
+					else
+					{
+						SU::Camera::position += SU::Camera::lookDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					}
 				}
 				break;
 
 				case SDLK_RSHIFT:
 				{
-					SU::Camera::position += SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					if (cameraAutoRotating)
+					{
+						heightAngle -= 0.01;
+					}
+					else
+					{
+						SU::Camera::position += SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					}
 				}
 				break;
 
@@ -574,7 +709,14 @@ int main( int argc, char* args[] )
 				case SDLK_KP_1:
 				#endif
 				{
-					SU::Camera::position -= SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					if (cameraAutoRotating)
+					{
+						heightAngle += 0.01;
+					}
+					else
+					{
+						SU::Camera::position -= SU::Camera::upDirection.getNormalized() * CAMERA_MOVEMENT_AMOUNT;
+					}
 				}
 				break;
 
@@ -616,6 +758,14 @@ int main( int argc, char* args[] )
 
 				default: break;
 			}
+		}
+
+		if (cameraAutoRotating)
+		{
+			SU::Camera::position = SU::Vector(0, 0, -10 * distance).rotated(SU::Vector(1, 0, 0), heightAngle).rotated(SU::Vector(0, 1, 0), rotationAngle);
+			SU::Camera::upDirection = SU::Vector(0, 1, 0).rotated(SU::Vector(1, 0, 0), heightAngle).rotated(SU::Vector(0, 1, 0), rotationAngle);
+			SU::Camera::lookDirection = -SU::Camera::position;
+			rotationAngle += autoRotationAmount;
 		}
 
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));

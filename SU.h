@@ -235,6 +235,8 @@ namespace SU
 		void rotateAroundY(double angle);
 		void rotateAroundZ(double angle);
 
+		void scale(double r);
+
 		Uint8 getLevel();
 	};
 
@@ -255,7 +257,7 @@ namespace SU
 		ONLY_FACING_TRIANGLES = 	0b1000,
 		DEPTH_SORT =				0b10000,
 		LIGHTING =					0b100000,
-//		GLOBAL_LIGHT =				0b10000,
+//		GLOBAL_LIGHTS,
 //		LOCAL_LIGHTS,
 //		BIG_CHUNK_SPLITTING,
 //		COLLISION_SPLITTING,

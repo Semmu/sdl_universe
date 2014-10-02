@@ -629,6 +629,13 @@ namespace SU
 		Y = Y.rotated(Z, a);
 	}
 
+	void Object::scale(double r)
+	{
+		X *= r;
+		Y *= r;
+		Z *= r;
+	}
+
 	Uint8 Object::getLevel()
 	{
 		if (parent == NULL)
@@ -936,6 +943,8 @@ namespace SU
 		 */
 
 		 cameraPlane = Plane(Camera::position + Camera::lookDirection.getNormalized() * Camera::viewDistanceMin, Camera::lookDirection);
+
+		 Camera::rightDirection = Camera::upDirection.crossProduct(Camera::lookDirection);
 
 		 cameraPlaneWidth = Camera::rightDirection.getNormalized() *
 		 					(sin(deg2rad(Camera::FOV/2)) / sin(deg2rad(90 - Camera::FOV/2))) * Camera::viewDistanceMin * 2;
