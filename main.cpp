@@ -37,7 +37,7 @@
 
 
 const double CAMERA_ROTATION_AMOUNT = 0.005;
-const double CAMERA_MOVEMENT_AMOUNT = 1;
+const double CAMERA_MOVEMENT_AMOUNT = 0.1;
 
 void DIE(const char* reason)
 {
@@ -122,7 +122,7 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 bool cameraAutoRotating = true;
 double autoRotationAmount = AUTO_ROTATION_AMOUNT;
-double distance = 5;
+double distance = 3;
 double heightAngle = 0;
 double rotationAngle = 0;
 
@@ -203,7 +203,6 @@ int main( int argc, char* args[] )
 
 	SU::init(surface);
 	SU::setFlag(SU::Flags::LIGHTING);
-	SU::setFlag(SU::Flags::DEBUG_TRANSLATIONS);
 
 
 	TTF_Font *font = TTF_OpenFont("./Instruction.ttf", 20);
@@ -267,10 +266,10 @@ int main( int argc, char* args[] )
 
 	Floating *f = NULL, *ff = NULL, *fff = NULL, *ffff = NULL, *fffff = NULL;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 0; i++)
 	{
 		f = new Floating(false);
-		for (int i = 0; i < 4; i++)
+/*		for (int i = 0; i < 4; i++)
 		{
 			ff = new Floating(true);
 			ff->obj.X = SU::Vector(0.5, 0, 0);
@@ -286,7 +285,7 @@ int main( int argc, char* args[] )
 				fff->obj.Z = SU::Vector(0, 0, 0.5);
 				ff->obj.addChild(&(fff->obj));
 
-/*				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < 4; i++)
 				{
 					ffff = new Floating(true);
 					ffff->obj.X = SU::Vector(0.5, 0, 0);
@@ -303,8 +302,8 @@ int main( int argc, char* args[] )
 						ffff->obj.addChild(&(fffff->obj));
 					}*/
 //				}
-			}
-		}
+//			}
+//		}
 	}
 	bool move = false;
 
@@ -317,7 +316,7 @@ int main( int argc, char* args[] )
 
 	// SHIP HERE
 
-/*	SU::Model hajtomu;
+	SU::Model hajtomu;
 	const int reszletesseg = 6;
 	for (int i = 0; i < reszletesseg; i++)
 	{
@@ -496,7 +495,7 @@ int main( int argc, char* args[] )
 
 	ship.transforming = true;
 	ship.rotateAroundY(M_PI / 2);
-*/
+
 
 
 
