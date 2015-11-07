@@ -574,6 +574,10 @@ int main( int argc, char* args[] )
 								SU::toggleFlag(SU::Flags::LIGHTING);
 							break;
 
+							case SDLK_F7:
+								SU::toggleFlag(SU::Flags::DEBUG_BUMPMAP);
+							break;
+
 							case SDLK_LEFT:
 							{
 								if (cameraAutoRotating)
@@ -816,7 +820,8 @@ int main( int argc, char* args[] )
 					"F3 [" << (SU::hasFlag(SU::Flags::DEBUG_TRANSLATIONS) ? '+' : ' ' ) << "] DEBUG_TRANSLATIONS" << std::endl <<
 					"F4 [" << (SU::hasFlag(SU::Flags::ONLY_FACING_TRIANGLES) ? '+' : ' ' ) << "] ONLY_FACING_TRIANGLES" << std::endl <<
 					"F5 [" << (SU::hasFlag(SU::Flags::DEPTH_SORT) ? '+' : ' ' ) << "] DEPTH_SORT" << std::endl <<
-					"F6 [" << (SU::hasFlag(SU::Flags::LIGHTING) ? '+' : ' ' ) << "] LIGHTING";
+					"F6 [" << (SU::hasFlag(SU::Flags::LIGHTING) ? '+' : ' ' ) << "] LIGHTING" << std::endl <<
+					"F7 [" << (SU::hasFlag(SU::Flags::DEBUG_BUMPMAP) ? '+' : ' ' ) << "] BUMPMAP";
 
 			std::string line;
 			SDL_Rect r;
