@@ -720,6 +720,17 @@ namespace SU
 		return mapColor(r, g, b);
 	}
 
+	Uint32 colorFromVectorDirection(const Vector& v)
+	{
+		Vector n = v.getNormalized();
+
+		double r = n.angleTo(Vector(1, 0, 0));
+		double g = n.angleTo(Vector(0, 1, 0));
+		double b = n.angleTo(Vector(0, 0, 1));
+
+		return SU::mapColor(r / M_PI * 255, g / M_PI * 255, b / M_PI * 255);
+	}
+
 
 
 	bool isInFrontOfCamera(const Vector& v)
@@ -904,7 +915,7 @@ namespace SU
 						if (o->flipTriangles)
 							t->flip();
 
-						if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
+						if (hasFlag(Flags::DEBUG_WIREFRAMING) ? true : (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true))
 							primitivesToRender.push_back(t);
 						else
 							delete t;
@@ -1024,25 +1035,32 @@ namespace SU
 					{
 						Triangle* t = static_cast<Triangle*>(p);
 
-						if (hasFlag(Flags::ONLY_FACING_TRIANGLES) ? isFacingTheCamera(t) : true)
+						SDL_Point p1 = positionOnScreen(t->P1);
+						SDL_Point p2 = positionOnScreen(t->P2);
+						SDL_Point p3 = positionOnScreen(t->P3);
+
+						if (hasFlag(Flags::DEBUG_WIREFRAMING))
 						{
-							SDL_Point p1 = positionOnScreen(t->P1);
-							SDL_Point p2 = positionOnScreen(t->P2);
-							SDL_Point p3 = positionOnScreen(t->P3);
+							line(surface, p1, p2, p->color);
+							line(surface, p1, p3, p->color);
+							line(surface, p3, p2, p->color);
 
-							if (hasFlag(Flags::DEBUG_WIREFRAMING))
-							{
-								line(surface, p1, p2, p->color);
-								line(surface, p1, p3, p->color);
-								line(surface, p3, p2, p->color);
+							primitivesRendered += 3;
+						}
+						else
+						{
+							int color;
 
-								primitivesRendered += 3;
-							}
+							if (hasFlag(Flags::DEBUG_BUMPMAP))
+								color = colorFromVectorDirection(t->getDirection());
 							else
-							{
-								tri(surface, p1, p2, p3, (hasFlag(Flags::LIGHTING) && t->lighted) ? computeColor(t->color, t->getDirection()) : t->color);
-								primitivesRendered++;
-							}
+								if (hasFlag(Flags::LIGHTING) && t->lighted)
+									color = computeColor(t->color, t->getDirection());
+								else
+									color = t->color;
+
+							tri(surface, p1, p2, p3, color);
+							primitivesRendered++;
 						}
 					}
 					break;
