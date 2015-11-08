@@ -542,8 +542,12 @@ int main( int argc, char* args[] )
 								running = false;
 							break;
 
+							case SDLK_q:
+								running = false;
+							break;
+
 							case SDLK_SPACE:
-								move = !move;
+								cameraAutoRotating = !cameraAutoRotating;
 							break;
 
 							case SDLK_0:
