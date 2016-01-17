@@ -644,6 +644,49 @@ namespace SU
 			return 1 + parent->getLevel();
 	}
 
+	namespace Shaders
+	{
+		void shadePoint(Point* p)
+		{
+			for (auto shader : shaders)
+				shader->shadePoint(p);
+		}
+
+		void shadeSegment(Segment* s)
+		{
+			for (auto shader : shaders)
+				shader->shadeSegment(s);
+		}
+
+		void shadeTriangle(Triangle* t)
+		{
+			for (auto shader : shaders)
+				shader->shadeTriangle(t);
+		}
+
+		std::list<Shader*> shaders;
+
+		void Shader::shadePoint(Point* p) {}
+		void Shader::shadeSegment(Segment* s) {}
+		void Shader::shadeTriangle(Triangle* t) {}
+
+		void BumpMapShader::shadePoint(Point* p)
+		{
+			p->color = WHITE;
+		}
+
+		void BumpMapShader::shadeSegment(Segment* s)
+		{
+			s->color = WHITE;
+		}
+
+		void BumpMapShader::shadeTriangle(Triangle* t)
+		{
+			t->lighted = false;
+			t->color = colorFromVectorDirection(t->getDirection());
+		}
+	}
+
 
 
 
@@ -1013,6 +1056,9 @@ namespace SU
 					case SU::Primitive::Type::POINT:
 					{
 						Point* pt = static_cast<Point*>(p);
+
+						Shaders::shadePoint(pt);
+
 						SDL_Point sp = positionOnScreen(pt->P1);
 						point(surface, sp, pt->color);
 
@@ -1023,6 +1069,9 @@ namespace SU
 					case SU::Primitive::Type::SEGMENT:
 					{
 						Segment* l = static_cast<Segment*>(p);
+
+						Shaders::shadeSegment(l);
+
 						SDL_Point p1 = positionOnScreen(l->P1);
 						SDL_Point p2 = positionOnScreen(l->P2);
 						line(surface, p1, p2, p->color);
@@ -1034,6 +1083,8 @@ namespace SU
 					case SU::Primitive::Type::TRIANGLE:
 					{
 						Triangle* t = static_cast<Triangle*>(p);
+
+						Shaders::shadeTriangle(t);
 
 						SDL_Point p1 = positionOnScreen(t->P1);
 						SDL_Point p2 = positionOnScreen(t->P2);
@@ -1051,13 +1102,10 @@ namespace SU
 						{
 							int color;
 
-							if (hasFlag(Flags::DEBUG_BUMPMAP))
-								color = colorFromVectorDirection(t->getDirection());
+							if (hasFlag(Flags::LIGHTING) && t->lighted)
+								color = computeColor(t->color, t->getDirection());
 							else
-								if (hasFlag(Flags::LIGHTING) && t->lighted)
-									color = computeColor(t->color, t->getDirection());
-								else
-									color = t->color;
+								color = t->color;
 
 							tri(surface, p1, p2, p3, color);
 							primitivesRendered++;

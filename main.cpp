@@ -10,8 +10,8 @@
 	#define HEIGHT 1080
 #else
 	#define WINDOWED
-	#define WIDTH 1600
-	#define HEIGHT 800
+	#define WIDTH 1200
+	#define HEIGHT 700
 #endif
 
 #if USING_SDL1
@@ -496,7 +496,33 @@ int main( int argc, char* args[] )
 	ship.transforming = true;
 	ship.rotateAroundY(M_PI / 2);
 
+	class UnShader : public SU::Shaders::Shader
+	{
+		void shadeTriangle(SU::Triangle* t)
+		{
+			t->lighted = false;
+		}
+	};
 
+	class JiggleShader : public SU::Shaders::Shader
+	{
+		void shadeTriangle(SU::Triangle* t)
+		{
+			t->P1 += SU::Vector(randDouble(0.1), randDouble(0.1), randDouble(0.1));
+			t->P2 += SU::Vector(randDouble(0.1), randDouble(0.1), randDouble(0.1));
+			t->P3 += SU::Vector(randDouble(0.1), randDouble(0.1), randDouble(0.1));
+		}
+	};
+
+	class RainbowShader : public SU::Shaders::Shader
+	{
+		void shadeTriangle(SU::Triangle* t)
+		{
+			t->color = SU::mapColor(128 + rand() % 128, 128 + rand() % 128, 128 + rand() % 128);
+		}
+	};
+
+	SU::Shaders::shaders.push_back(new JiggleShader);
 
 
 
@@ -579,7 +605,6 @@ int main( int argc, char* args[] )
 							break;
 
 							case SDLK_F7:
-								SU::toggleFlag(SU::Flags::DEBUG_BUMPMAP);
 							break;
 
 							case SDLK_LEFT:
@@ -646,7 +671,7 @@ int main( int argc, char* args[] )
 					else
 					{
 						SU::Camera::yaw(xdiff * 0.001);
-						SU::Camera::pitch(ydiff * 0.001);
+						SU::Camera::pitch(ydiff * 0.0001);
 					}
 
 					#if USING_SDL1

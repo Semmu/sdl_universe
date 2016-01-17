@@ -241,6 +241,32 @@ namespace SU
 	};
 
 
+	namespace Shaders
+	{
+		class Shader
+		{
+		public:
+			virtual void shadePoint(Point* p);
+			virtual void shadeSegment(Segment* p);
+			virtual void shadeTriangle(Triangle* p);
+		};
+
+		class BumpMapShader : public Shader
+		{
+		public:
+			virtual void shadePoint(Point* p);
+			virtual void shadeSegment(Segment* p);
+			virtual void shadeTriangle(Triangle* p);
+		};
+
+		extern std::list<Shader*> shaders;
+
+		void shadePoint(Point* p);
+		void shadeSegment(Segment* s);
+		void shadeTriangle(Triangle* t);
+	}
+
+
 
 
 	// ==============================================================================
@@ -316,6 +342,8 @@ namespace SU
 	bool hasFlag(int f);
 
 	int mapColor(int r, int g, int b);
+
+	Uint32 colorFromVectorDirection(const Vector& v);
 
 	bool isOnScreen(const Vector& v);
 
