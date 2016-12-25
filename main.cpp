@@ -617,9 +617,13 @@ int main( int argc, char* args[] )
 								SU::toggleFlag(SU::Flags::DEPTH_SORT);
 							break;
 
-							case SDLK_F6:
-								SU::toggleFlag(SU::Flags::LIGHTING);
-							break;
+                            case SDLK_F6:
+                                SU::toggleFlag(SU::Flags::LIGHTING);
+                            break;
+
+                            case SDLK_F7:
+                                SU::toggleFlag(SU::Flags::DEBUG_BUMPMAP);
+                            break;
 
 							default:
 								pressed_down_keys.push_back(e.key.keysym.sym);

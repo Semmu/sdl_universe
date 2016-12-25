@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 #include "SU.h"
 
 // ==================================================================================
@@ -239,6 +240,8 @@ namespace SU
 
 		Plane cameraPlane, cameraBottomPlane, cameraLeftPlane, cameraRightPlane, cameraTopPlane;
 		Vector cameraPlaneWidth, cameraPlaneHeight, cameraPlaneBottomLeft;
+
+		Shaders::BumpMapShader* bumpMapShader = new Shaders::BumpMapShader();
 	}
 
 
@@ -980,6 +983,9 @@ namespace SU
 
 	void render()
 	{
+		if (SU::hasFlag(SU::Flags::DEBUG_BUMPMAP))
+			SU::Shaders::shaders.push_back(SU::bumpMapShader);
+
 		// FIXME: FOV value restriction should be somewhere else?
 
 		if (Camera::FOV < 10)
@@ -1122,6 +1128,7 @@ namespace SU
 		}
 
 
+		SU::Shaders::shaders.erase(std::remove(SU::Shaders::shaders.begin(), SU::Shaders::shaders.end(), SU::bumpMapShader), SU::Shaders::shaders.end());
 
 
 		/*
