@@ -117,7 +117,7 @@ int main( int argc, char* args[] )
 	SU::setFlag(SU::Flags::LIGHTING);
 
 
-	TTF_Font *font = TTF_OpenFont("./Instruction.ttf", 20);
+	TTF_Font *font = TTF_OpenFont("./font", 0);
 	if (font == NULL)
 		DIE(TTF_GetError());
 
