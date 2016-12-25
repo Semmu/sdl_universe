@@ -302,7 +302,7 @@ public:
 };
 
 std::vector<Scene*> scenes;
-Scene* currentScene;
+std::vector<Scene*>::iterator currentScene;
 
 struct
 {
@@ -366,9 +366,10 @@ int main( int argc, char* args[] )
 		DIE(TTF_GetError());
 
 	scenes.push_back(new SpaceshipScene());
+	scenes.push_back(new HouseScene());
 
-	currentScene = scenes[0];
-	currentScene->onEnter();
+	currentScene = scenes.begin();
+	(*currentScene)->onEnter();
 
 	Camera.distance = 5;
 	Camera.flatAngle = 0;
@@ -425,6 +426,26 @@ int main( int argc, char* args[] )
 							case SDLK_ESCAPE:
 							case SDLK_q:
 								running = false;
+							break;
+
+							case SDLK_j:
+							{
+								(*currentScene)->onLeave();
+								if (currentScene == scenes.begin())
+									currentScene = scenes.end();
+								currentScene--;
+								(*currentScene)->onEnter();
+							}
+							break;
+
+							case SDLK_k:
+							{
+								(*currentScene)->onLeave();
+								currentScene++;
+								if (currentScene == scenes.end())
+									currentScene = scenes.begin();
+								(*currentScene)->onEnter();
+							}
 							break;
 
 							case SDLK_F12:
@@ -524,7 +545,7 @@ int main( int argc, char* args[] )
 			text.str(std::string());
 			text.clear();
 
-			text << (int)previousSecFPS << " FPS --- Scene: " << currentScene->name;
+			text << (int)previousSecFPS << " FPS --- Scene: " << (*currentScene)->name;
 
 			SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.str().c_str(), c);
 
