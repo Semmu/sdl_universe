@@ -5,6 +5,7 @@
 #include <sstream>
 #include <cmath>
 #include <vector>
+#include <numeric>
 
 #if 0
 	#define WIDTH 1920
@@ -446,6 +447,8 @@ struct
 	double distance, flatAngle, heightAngle;
 } Camera;
 
+std::vector<Uint32> render_times(10);
+std::vector<Uint32>::iterator current_render_time = render_times.begin();
 
 
 int main( int argc, char* args[] )
@@ -453,6 +456,7 @@ int main( int argc, char* args[] )
 	Uint32 currentSec = 0;
 	Uint32 currentSecFPS = 0;
 	Uint8 previousSecFPS = 0;
+    Uint32 renderTimeAvg, renderStartTick, renderEndTick;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	if(TTF_Init() == -1)
@@ -683,10 +687,18 @@ int main( int argc, char* args[] )
 			}
 		}
 
+        renderStartTick = SDL_GetTicks();
 		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
-
 		SU::render();
+        renderEndTick = SDL_GetTicks();
 		currentSecFPS++;
+
+        (*current_render_time) = (renderEndTick-renderStartTick);
+        current_render_time++;
+        if (current_render_time == render_times.end())
+            current_render_time = render_times.begin();
+
+        renderTimeAvg = std::accumulate(render_times.begin(), render_times.end(), 0)/render_times.size();
 
 		SDL_Color c = {150, 150, 150};
 		if (fps_visible)
@@ -694,7 +706,7 @@ int main( int argc, char* args[] )
 			text.str(std::string());
 			text.clear();
 
-			text << (int)previousSecFPS << " FPS --- Scene: " << (*currentScene)->name;
+			text << renderTimeAvg << "ms --- Scene: " << (*currentScene)->name;
 
 			SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.str().c_str(), c);
 
