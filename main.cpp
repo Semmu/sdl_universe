@@ -301,6 +301,143 @@ public:
 	~SpaceshipScene() {}
 };
 
+class SphereTriangle
+{
+public:
+    SU::Vector A, B, C;
+    SU::Object* obj;
+
+    SphereTriangle(SU::Vector a, SU::Vector b, SU::Vector c) : A(a), B(b), C(c)
+    {
+        SU::Mesh* m = new SU::Mesh();
+        m->add(new SU::Triangle(A, B, C, SU::mapColor(rand() % 256,rand()%256,rand()%256), true));
+        obj = new SU::Object();
+        obj->mesh = m;
+    }
+
+    void disable()
+    {
+    	obj->enabled = false;
+    }
+
+    ~SphereTriangle() {}
+};
+
+class Sphere
+{
+public:
+    SU::Vector top, bottom;
+    std::vector<SU::Vector> topRow, bottomRow;
+    SU::Object obj;
+
+    std::vector<SphereTriangle*> spts;
+
+    Sphere()
+    {
+        top = SU::Vector(0, 1, 0);
+        for (int i = 0; i < 5; ++i)
+        {
+            SU::Vector forward(1, 0, 0);
+            SU::Vector up_a_bit = forward.rotated(SU::Vector(0, 0, 1), M_PI / 6);
+            SU::Vector rotated = up_a_bit.rotated(SU::Vector(0, 1, 0), (M_PI * 2 / 5) * i);
+            topRow.push_back(rotated);
+            bottomRow.push_back(-1 * rotated);
+        }
+        bottom = SU::Vector(0, -1, 0);
+
+        for (int i = 0; i < 5; ++i)
+        {
+            SphereTriangle* spt = new SphereTriangle(top, topRow[i], topRow[i-1<0?4:i-1]);
+            obj.addChild(spt->obj);
+            spts.push_back(spt);
+        }
+        for (int i = 0; i < 5; ++i)
+        {
+            SphereTriangle* spt = new SphereTriangle(bottom, bottomRow[i], bottomRow[i+1>4?0:i+1]);
+            obj.addChild(spt->obj);
+            spts.push_back(spt);
+        }
+
+        for (int i = 0; i < 5; ++i)
+        {
+            SphereTriangle* spt = new SphereTriangle(bottomRow[(i+1)%5], bottomRow[i], topRow[(i+1+2)%5]);
+            obj.addChild(spt->obj);
+            spts.push_back(spt);
+        }
+
+        for (int i = 0; i < 5; ++i)
+        {
+            SphereTriangle* spt = new SphereTriangle(topRow[i], topRow[(i+1)%5], bottomRow[(i+1+2)%5]);
+            obj.addChild(spt->obj);
+            spts.push_back(spt);
+        }
+    }
+
+    void refine()
+    {
+        for(auto ch : obj.children)
+        {
+            ch->enabled = false;
+        }
+
+        std::vector<SphereTriangle*> refined_spts;
+
+        for(auto spt : spts)
+        {
+        	spt->disable();
+
+            SphereTriangle* spt1 = new SphereTriangle(
+                spt->A,
+                ((spt->A+spt->B)/2).getNormalized(),
+                ((spt->A+spt->C)/2).getNormalized());
+            obj.addChild(spt1->obj);
+
+            SphereTriangle* spt2 = new SphereTriangle(
+                spt->B,
+                ((spt->C+spt->B)/2).getNormalized(),
+                ((spt->A+spt->B)/2).getNormalized());
+            obj.addChild(spt2->obj);
+
+            SphereTriangle* spt3 = new SphereTriangle(
+                spt->C,
+                ((spt->A+spt->C)/2).getNormalized(),
+                ((spt->B+spt->C)/2).getNormalized());
+            obj.addChild(spt3->obj);
+
+            SphereTriangle* spt4 = new SphereTriangle(
+                ((spt->C+spt->A)/2).getNormalized(),
+                ((spt->A+spt->B)/2).getNormalized(),
+                ((spt->B+spt->C)/2).getNormalized());
+            obj.addChild(spt4->obj);
+
+            refined_spts.push_back(spt1);
+            refined_spts.push_back(spt2);
+            refined_spts.push_back(spt3);
+            refined_spts.push_back(spt4);
+        }
+
+        spts.empty();
+        spts = refined_spts;
+
+    }
+
+    ~Sphere() {}
+
+};
+
+class IcosahedronScene : public Scene
+{
+public:
+	IcosahedronScene(SU::Object* sphereObj) : Scene("Icosahedron")
+	{
+		//delete obj;
+		obj = sphereObj;
+		obj->enabled = false;
+	}
+
+	~IcosahedronScene() {}
+};
+
 std::vector<Scene*> scenes;
 std::vector<Scene*>::iterator currentScene;
 
@@ -365,6 +502,8 @@ int main( int argc, char* args[] )
 	if (font == NULL)
 		DIE(TTF_GetError());
 
+	Sphere sp1;
+	scenes.push_back(new IcosahedronScene(&(sp1.obj)));
 	scenes.push_back(new SpaceshipScene());
 	scenes.push_back(new HouseScene());
 
@@ -445,6 +584,12 @@ int main( int argc, char* args[] )
 								if (currentScene == scenes.end())
 									currentScene = scenes.begin();
 								(*currentScene)->onEnter();
+							}
+							break;
+
+							case SDLK_r:
+							{
+								sp1.refine();
 							}
 							break;
 
