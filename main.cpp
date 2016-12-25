@@ -34,11 +34,6 @@
 
 #include "SU.h"
 
-
-
-const double CAMERA_ROTATION_AMOUNT = 0.005;
-const double CAMERA_MOVEMENT_AMOUNT = 0.1;
-
 void DIE(const char* reason)
 {
 	#if USING_SDL1
@@ -58,13 +53,16 @@ void DIE()
 	DIE(SDL_GetError());
 }
 
-
-
 #if USING_SDL1
 std::list<int> pressed_down_keys;
 #else
 std::list<SDL_Keycode> pressed_down_keys;
 #endif
+
+
+
+
+
 
 
 int main( int argc, char* args[] )
@@ -117,7 +115,7 @@ int main( int argc, char* args[] )
 	SU::setFlag(SU::Flags::LIGHTING);
 
 
-	TTF_Font *font = TTF_OpenFont("./font", 0);
+	TTF_Font *font = TTF_OpenFont("./Dina_r400-10.bdf", 0);
 	if (font == NULL)
 		DIE(TTF_GetError());
 
