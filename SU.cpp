@@ -848,6 +848,9 @@ namespace SU
 
 	void processObject(Object* o)
 	{
+		if (!o->enabled)
+			return;
+
 		if (o->parent == NULL)
 		{
 			// this is a root Object
