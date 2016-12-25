@@ -585,12 +585,12 @@ namespace SU
 
 
 
-	void Model::add(Primitive* p)
+	void Mesh::add(Primitive* p)
 	{
-		contents.push_back(p);
+		primitives.push_back(p);
 	}
 
-	void Model::add(Quad* q)
+	void Mesh::add(Quad* q)
 	{
 		add(new Triangle(q->P1, q->P2, q->P3, q->color, q->lighted));
 		add(new Triangle(q->P1, q->P3, q->P4, q->color, q->lighted));
@@ -600,7 +600,7 @@ namespace SU
 
 
 
-	Object::Object() : enabled(true), flipTriangles(false), model(NULL), position(Vector(0, 0, 0)), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
+	Object::Object() : enabled(true), flipTriangles(false), mesh(NULL), position(Vector(0, 0, 0)), transforming(false), X(Vector(1, 0, 0)), Y(Vector(0, 1, 0)), Z(Vector(0, 0, 1)), parent(NULL)
 	{
 		everyObject.push_back(this);
 	}
@@ -892,9 +892,9 @@ namespace SU
 		if (hasFlag(Flags::DEBUG_TRANSLATIONS))
 			primitivesToRender.push_back(new SU::Segment((o->parent == NULL ? Vector(0, 0, 0) : o->parent->resultantPosition), o->resultantPosition, SU::mapColor(o->getLevel() & 0b00000100 ? 255 : 0, o->getLevel() & 0b00000010 ? 255 : 0, o->getLevel() & 0b00000001 ? 255 : 0)));
 
-		if (o->model != NULL)
+		if (o->mesh != NULL)
 		{
-			for (Primitive* p : o->model->contents)
+			for (Primitive* p : o->mesh->primitives)
 			{
 				switch(p->getType())
 				{

@@ -195,10 +195,10 @@ namespace SU
 			 double x4, double y4, double z4, int c = WHITE, bool l = false);
 	};
 
-	class Model
+	class Mesh
 	{
 	public:
-		std::list<Primitive*> contents;
+		std::list<Primitive*> primitives;
 
 		void add(Primitive* p);
 		void add(Quad* q);
@@ -216,7 +216,7 @@ namespace SU
 		bool enabled;
 
 		bool flipTriangles;
-		Model* model;
+		Mesh* mesh;
 		Vector position;
 
 		bool transforming;

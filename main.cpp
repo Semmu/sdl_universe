@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include <vector>
 
 #if 0
 	#define WIDTH 1920
@@ -62,6 +63,80 @@ std::list<SDL_Keycode> pressed_down_keys;
 
 
 
+class Scene
+{
+public:
+	std::string name;
+
+	Scene(std::string n) : name(n)
+	{
+
+	}
+
+	virtual void onEnter() = 0;
+	virtual void onLeave() = 0;
+
+	virtual ~Scene() {}
+};
+
+class IcosahedronScene : public Scene
+{
+public:
+	SU::Object* obj;
+
+	IcosahedronScene() : Scene("Icosahedron")
+	{
+		obj = new SU::Object();
+		SU::Mesh* mesh = new SU::Mesh();
+
+	// front
+	    mesh->add(new SU::Triangle(0, 0, 0,     1, 0, 0,    0, 1, 0,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(1, 1, 0,     0, 1, 0,    1, 0, 0,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(0, 1, 0,     1, 1, 0,    0.5, 1.5, 0.5,  SU::mapColor(150, 20, 20), true));
+
+	    // right
+	    mesh->add(new SU::Triangle(1, 0, 0,     1, 1, 1,    1, 1, 0,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(1, 0, 0,     1, 0, 1,    1, 1, 1,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(1, 1, 0,     1, 1, 1,    0.5, 1.5, 0.5,  SU::mapColor(150, 20, 20), true));
+
+	    // left
+	    mesh->add(new SU::Triangle(0, 0, 0,     0, 1, 0,    0, 1, 1,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(0, 0, 0,     0, 1, 1,    0, 0, 1,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(0, 1, 1,     0, 1, 0,    0.5, 1.5, 0.5,  SU::mapColor(150, 20, 20), true));
+
+	    // back
+	    mesh->add(new SU::Triangle(0, 0, 1,     0, 1, 1,    1, 1, 1,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(0, 0, 1,     1, 1, 1,    1, 0, 1,    SU::mapColor(200, 200, 50), true));
+	    mesh->add(new SU::Triangle(1, 1, 1,     0, 1, 1,    0.5, 1.5, 0.5,  SU::mapColor(150, 20, 20), true));
+
+	    // bottom
+	    mesh->add(new SU::Triangle(0, 0, 0,     0, 0, 1,    1, 0, 0,    SU::mapColor(10, 20, 50)));
+	    mesh->add(new SU::Triangle(1, 0, 1,     1, 0, 0,    0, 0, 1,    SU::mapColor(10, 20, 50)));
+
+		obj->mesh = mesh;
+		obj->transforming = true;
+
+		obj->position = SU::Vector(-0.5, -0.5, -0.5);
+	}
+
+	void onEnter()
+	{
+
+	}
+
+	void onLeave()
+	{
+
+	}
+};
+
+std::vector<Scene*> scenes;
+Scene* currentScene;
+
+struct
+{
+	double distance, flatAngle, heightAngle;
+} Camera;
 
 
 
@@ -119,10 +194,27 @@ int main( int argc, char* args[] )
 	if (font == NULL)
 		DIE(TTF_GetError());
 
+	scenes.push_back(new IcosahedronScene());
 
+	currentScene = scenes[0];
+
+	Camera.distance = 5;
+	Camera.flatAngle = 0;
+	Camera.heightAngle = 0;
 
 	while (running)
 	{
+		SU::Camera::position = SU::Vector(-1 * Camera.distance, 0, 0).rotated(
+			SU::Vector(0, 1, 0), Camera.flatAngle);
+		SU::Camera::lookDirection = (-1 * SU::Camera::position).getNormalized();
+		SU::Camera::upDirection = SU::Vector(0, 1, 0);
+
+		SU::Vector right = SU::Camera::upDirection.crossProduct(SU::Camera::lookDirection);
+
+		SU::Camera::upDirection = SU::Camera::upDirection.rotated(right, Camera.heightAngle);
+		SU::Camera::lookDirection = SU::Camera::lookDirection.rotated(right, Camera.heightAngle);
+		SU::Camera::position = SU::Camera::position.rotated(right, Camera.heightAngle);
+
 		if (SDL_GetTicks() / 1000 != currentSec)
 		{
 			currentSec++;
@@ -204,16 +296,9 @@ int main( int argc, char* args[] )
 					int xdiff = e.motion.x - WIDTH / 2;
 					int ydiff = e.motion.y - HEIGHT / 2;
 
-					if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1))
-					{
-						SU::Camera::position -= SU::Camera::upDirection / 100 * ydiff;
-						SU::Camera::position += SU::Camera::rightDirection / 100 * xdiff;
-					}
-					else
-					{
-						SU::Camera::yaw(xdiff * 0.001);
-						SU::Camera::pitch(ydiff * 0.0001);
-					}
+					Camera.heightAngle += ydiff * 0.01;
+					Camera.flatAngle += xdiff * 0.01;
+
 
 					#if USING_SDL1
 					SDL_WarpMouse(WIDTH / 2, HEIGHT / 2);
@@ -250,7 +335,7 @@ int main( int argc, char* args[] )
 			text.str(std::string());
 			text.clear();
 
-			text << (int)previousSecFPS;
+			text << (int)previousSecFPS << " FPS --- Scene: " << currentScene->name;
 
 			SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.str().c_str(), c);
 
@@ -280,7 +365,7 @@ int main( int argc, char* args[] )
 			std::string line;
 			SDL_Rect r;
 			r.x = 10;
-			r.y = surface->h - 40;
+			r.y = surface->h - 25;
 			while(std::getline(text, line, '\n'))
 			{
 				SDL_Surface *textSurface = TTF_RenderText_Solid(font, line.c_str(), c);
@@ -290,7 +375,7 @@ int main( int argc, char* args[] )
 					SDL_FreeSurface(textSurface);
 				}
 
-				r.y -= 30;
+				r.y -= 20;
 			}
 		}
 
