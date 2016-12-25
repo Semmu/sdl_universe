@@ -66,27 +66,33 @@ std::list<SDL_Keycode> pressed_down_keys;
 class Scene
 {
 public:
+	SU::Object* obj;
 	std::string name;
 
 	Scene(std::string n) : name(n)
 	{
-
+		obj = new SU::Object();
+		obj->enabled = false;
 	}
 
-	virtual void onEnter() = 0;
-	virtual void onLeave() = 0;
+	virtual void onEnter()
+	{
+		obj->enabled = true;
+	}
+
+	virtual void onLeave()
+	{
+		obj->enabled = false;
+	}
 
 	virtual ~Scene() {}
 };
 
-class IcosahedronScene : public Scene
+class HouseScene : public Scene
 {
 public:
-	SU::Object* obj;
-
-	IcosahedronScene() : Scene("Icosahedron")
+	HouseScene() : Scene("House")
 	{
-		obj = new SU::Object();
 		SU::Mesh* mesh = new SU::Mesh();
 
 	// front
@@ -117,17 +123,182 @@ public:
 		obj->transforming = true;
 
 		obj->position = SU::Vector(-0.5, -0.5, -0.5);
+		obj->enabled = false;
 	}
+};
 
-	void onEnter()
+class SpaceshipScene : public Scene
+{
+public:
+	SU::Mesh hajtomu, torzs, vaz;
+    SU::Object torzsObject,torzsTukor,torzsHatul,torzsHatulT,torzslent,tlenttukor,tlenthatul,tlehatu,ship, h1, h2, h3, h4, vaz1, vaz2, vaz3, vaz4;
+
+	SpaceshipScene() : Scene("Spaceship")
 	{
+	    const int reszletesseg = 20;
+	    for (int i = 0; i < reszletesseg; i++)
+	    {
+	        SU::Vector a(0, 1, 0), b(-2, 0.5, 0), x(1, 0, 0);
+	        hajtomu.add(new SU::Quad(b.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 a.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 a.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+	                                 b.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(30, 30, 30), true));
 
+	        SU::Vector aa(-2, 0.5, 0), bb(-1.9, 0.2, 0);
+	        hajtomu.add(new SU::Quad(bb.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 aa.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 aa.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+	                                 bb.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(250, 50, 50), false));
+
+	        SU::Vector aaa(-1.9, 0.2, 0), bbb(-3, 0, 0);
+	        hajtomu.add(new SU::Quad(bbb.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 aaa.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 aaa.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+	                                 bbb.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(250, 250, 50), false));
+
+	        SU::Vector c(0, 1, 0), d(1, 0.8, 0);
+	        hajtomu.add(new SU::Quad(c.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 d.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 d.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+	                                 c.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(100, 100, 100), true));
+
+	        SU::Vector cc(1, 0.8, 0), dd(1.1, 0.7, 0);
+	        hajtomu.add(new SU::Quad(cc.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 dd.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 dd.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+	                                 cc.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(50, 100, 220), false));
+
+	        SU::Vector ccc(1.1, 0.7, 0), ddd(0.5, 0, 0);
+	        hajtomu.add(new SU::Quad(ccc.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 ddd.rotated(x, M_PI / reszletesseg * 2 * (i)),
+	                                 ddd.rotated(x, M_PI / reszletesseg * 2 * (i + 1)),
+	                                 ccc.rotated(x, M_PI / reszletesseg * 2 * (i + 1)), SU::mapColor(30, 30, 30), true));
+	    }
+
+	    torzs.add(new SU::Quad(3, 0, 0,     3, 0, 1,        0, 1, 1,        0, 1, 0, SU::mapColor(100, 100, 100), true));
+	    torzs.add(new SU::Quad(3, 0, 0,     3.2, -0.5, 0,   3.2, -0.5, 1,   3, 0, 1, SU::mapColor(100, 100, 100), true));
+	    torzs.add(new SU::Quad(3, 0, 1,     3.2, -0.5, 1,   0, -0.5, 2,     0, 0, 2, SU::mapColor(30, 30, 30), true));
+	    torzs.add(new SU::Triangle(3, 0, 1,     0, 0, 2,        0, 1, 1, SU::mapColor(30, 30, 30), true));
+
+
+	    torzsObject.mesh = &torzs;
+	    torzsObject.transforming = true;
+
+	    torzsTukor.mesh = &torzs;
+	    torzsTukor.transforming = true;
+	    torzsTukor.flipTriangles = true;
+	    torzsTukor.Z.z = -1;
+
+	    torzsHatul.mesh = &torzs;
+	    torzsHatul.transforming = true;
+	    torzsHatul.flipTriangles = true;
+	    torzsHatul.X.x = -2;
+
+	    torzsHatulT.mesh = &torzs;
+	    torzsHatulT.transforming = true;
+	    torzsHatulT.Z.z = -1;
+	    torzsHatulT.X.x = -2;
+
+	    torzslent.mesh = &torzs;
+	    torzslent.transforming = true;
+	    torzslent.flipTriangles = true;
+	    torzslent.Y.y = -0.3;
+	    torzslent.position.y = -0.644444;
+
+	    tlenttukor.mesh = &torzs;
+	    tlenttukor.transforming = true;
+	    tlenttukor.Y.y = -0.3;
+	    tlenttukor.Z.z = -1;
+	    tlenttukor.position.y = -0.644444;
+
+	    tlenthatul.mesh = &torzs;
+	    tlenthatul.transforming = true;
+	    tlenthatul.Y.y = -0.3;
+	    tlenthatul.X.x = -2;
+	    tlenthatul.position.y = -0.644444;
+
+	    tlehatu.mesh = &torzs;
+	    tlehatu.transforming = true;
+	    tlehatu.Y.y = -0.3;
+	    tlehatu.X.x = -2;
+	    tlehatu.Z.z = -1;
+	    tlehatu.flipTriangles = true;
+	    tlehatu.position.y = -0.644444;
+
+
+	    // BUG! FIXME! gyermek object nem forog, csak ha o is transforming. pedig ettol nem kene fuggnie
+	    h1.mesh = &hajtomu;
+	    h1.transforming = true;
+	    h1.position = SU::Vector(0, 3, 4);
+	    h2.mesh = &hajtomu;
+	    h2.transforming = true;
+	    h2.position = SU::Vector(0, 3, -4);
+	    h3.mesh = &hajtomu;
+	    h3.transforming = true;
+	    h3.position = SU::Vector(0, -3, -4);
+	    h4.mesh = &hajtomu;
+	    h4.transforming = true;
+	    h4.position = SU::Vector(0, -3, 4);
+
+	    vaz.add(new SU::Quad(-1, -1, -1,    1, -1, -1,      1, 1, -1,       -1, 1, -1,  SU::mapColor(30, 30, 30), true));
+	    vaz.add(new SU::Quad(-1, -1, 1,     -1, 1, 1,       1, 1, 1,        1, -1, 1,   SU::mapColor(30, 30, 30), true));
+	    vaz.add(new SU::Quad(-1, -1, 1,     -1, -1, -1,     -1, 1, -1,      -1, 1, 1,   SU::mapColor(100, 100, 100), true));
+	    vaz.add(new SU::Quad(1, -1, -1,     1, -1, 1,       1, 1, 1,        1, 1, -1,   SU::mapColor(100, 100, 100), true));
+
+	    vaz1.mesh = &vaz;
+	    vaz1.transforming = true;
+	    vaz1.position = SU::Vector(0, 1.3, 2.6);
+	    vaz1.Y.y = 6;
+	    vaz1.scale(0.21);
+	    vaz1.rotateAroundX(1.4);
+
+	    vaz2.mesh = &vaz;
+	    vaz2.transforming = true;
+	    vaz2.position = SU::Vector(0, 1.3, -2.6);
+	    vaz2.Y.y = 6;
+	    vaz2.scale(0.21);
+	    vaz2.rotateAroundX(-1.4);
+
+	    vaz3.mesh = &vaz;
+	    vaz3.transforming = true;
+	    vaz3.position = SU::Vector(0, -1.45, -2.65);
+	    vaz3.Y.y = 5;
+	    vaz3.scale(0.21);
+	    vaz3.rotateAroundX(1.4);
+
+	    vaz4.mesh = &vaz;
+	    vaz4.transforming = true;
+	    vaz4.position = SU::Vector(0, -1.45, 2.65);
+	    vaz4.Y.y = 5;
+	    vaz4.scale(0.21);
+	    vaz4.rotateAroundX(-1.4);
+
+
+
+	    ship.addChild(&h1);
+	    ship.addChild(&h2);
+	    ship.addChild(&h3);
+	    ship.addChild(&h4);
+	    ship.addChild(&torzsObject);
+	    ship.addChild(&torzsTukor);
+	    ship.addChild(&torzsHatul);
+	    ship.addChild(&torzsHatulT);
+	    ship.addChild(&torzslent);
+	    ship.addChild(&tlenttukor);
+	    ship.addChild(&tlenthatul);
+	    ship.addChild(&tlehatu);
+	    ship.addChild(&vaz1);
+	    ship.addChild(&vaz2);
+	    ship.addChild(&vaz3);
+	    ship.addChild(&vaz4);
+
+	    ship.transforming = true;
+	    ship.scale(0.3);
+
+	    obj->addChild(&ship);
 	}
 
-	void onLeave()
-	{
-
-	}
+	~SpaceshipScene() {}
 };
 
 std::vector<Scene*> scenes;
@@ -194,9 +365,10 @@ int main( int argc, char* args[] )
 	if (font == NULL)
 		DIE(TTF_GetError());
 
-	scenes.push_back(new IcosahedronScene());
+	scenes.push_back(new SpaceshipScene());
 
 	currentScene = scenes[0];
+	currentScene->onEnter();
 
 	Camera.distance = 5;
 	Camera.flatAngle = 0;
@@ -305,6 +477,23 @@ int main( int argc, char* args[] )
 					#else
 					SDL_WarpMouseInWindow(window, WIDTH / 2, HEIGHT / 2);
 					#endif
+				}
+				break;
+
+				case SDL_MOUSEBUTTONDOWN:
+				{
+					switch(e.button.button)
+					{
+						case SDL_BUTTON_WHEELUP:
+							Camera.distance *= 0.9;
+						break;
+
+						case SDL_BUTTON_WHEELDOWN:
+							Camera.distance /= 0.9;
+						break;
+
+						default: break;
+					}
 				}
 				break;
 
