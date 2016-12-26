@@ -5,6 +5,7 @@
 
 # the binary
 sdl_universe
+SDL_Universe
 *.sublime*
 
 ### C++ ###
