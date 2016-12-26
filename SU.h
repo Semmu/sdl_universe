@@ -9,24 +9,6 @@
 
 #define WHITE 0xffffffff
 
-#if USING_SDL1
-struct SDL_Point
-{
-	int x, y;
-};
-#endif
-
-// ==================================================================================
-//
-// 		SMALL HELPER FUNCTION DECLARATIONS
-//
-// ==================================================================================
-
-double randDouble(double max = 1.0);
-
-double deg2rad(double d);
-double rad2deg(double r);
-
 namespace SU
 {
 	// ==============================================================================

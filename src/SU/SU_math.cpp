@@ -4,6 +4,6 @@
 
 void SU_math_fun()
 {
-    SU_etc_fun();
+    std::cout << M_PI << " " << randDouble(M_PI) << std::endl;
     std::cout << "SU_math function" << std::endl;
 }

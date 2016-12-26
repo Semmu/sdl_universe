@@ -17,11 +17,6 @@ void swap(int& a, int& b)
 	b = aa;
 }
 
-double randDouble(double max) { return double(rand()) / RAND_MAX * max; }
-
-double deg2rad(double d) { return d / 180 * M_PI; }
-double rad2deg(double r) { return r / M_PI * 180; }
-
 void putpixel_nolock(SDL_Surface* s, int x, int y, int color)
 {
 	if (x < 0 || x >= s->w || y < 0 || y >= s->h)

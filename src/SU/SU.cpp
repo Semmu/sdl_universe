@@ -4,6 +4,7 @@
 
 void SU_init()
 {
+    srand(time(NULL));
     SU_math_fun();
     std::cout << "SU inited" << std::endl;
 }

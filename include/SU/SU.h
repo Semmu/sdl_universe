@@ -1,5 +1,5 @@
 #ifndef SU_h
-#define SU_h value
+#define SU_h
 
 void SU_init();
 
