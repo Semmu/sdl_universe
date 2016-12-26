@@ -1,32 +1,66 @@
-# what to compile
-OBJS = main.cpp SU.cpp
+#
+#	VARIABLES AND SETTINGS
+#
 
-# what to compile with
-CC = g++
+# compiler
+CC := g++
+# compilation flags
+CFLAGS := -O -Wall -std=c++11 `sdl-config --cflags` -DUSING_SDL1
+LFLAGS := `sdl-config --libs` -lSDL_ttf
 
-# compile flags
-COMPILER_FLAGS = -O -Wall -std=c++11 `sdl-config --cflags` -DUSING_SDL1
-COMPILER_FLAGS2 = -O -Wall -std=c++11 `sdl2-config --cflags`
+# source files
+SRCDIR := src
+SRCEXT := cpp
+SRCS := $(wildcard $(SRCDIR)/*.$(SRCEXT)) $(wildcard $(SRCDIR)/SU/*.$(SRCEXT))
 
-# what to link
-LINKER_FLAGS = `sdl-config --libs` -lSDL_ttf
-LINKER_FLAGS2 = `sdl2-config --libs` -lSDL2_ttf
+# building
+BUILDDIR := build
+OBJS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SRCS:.$(SRCEXT)=.o))
 
-# output name
-OBJ_NAME = sdl_universe
+# output
+OUTPUTDIR := bin
+TARGET := SDL_Universe
 
-default: sdl1
 
-sdl2: $(OBJS)
-	@echo "Building with SDL2"
-	$(CC) $(OBJS) $(COMPILER_FLAGS2) $(LINKER_FLAGS2) -o $(OBJ_NAME)
-	./$(OBJ_NAME)
 
-sdl1: $(OBJS)
-	@echo "Building with SDL1.2"
-	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
-	./$(OBJ_NAME)
 
-# fresh start
+#
+#	RULES
+#
+
+run: $(TARGET)
+	@echo ""
+	@echo "### RUNNING"
+	@echo -n "    "
+	./$(TARGET)
+
+# linking rule
+$(TARGET): $(OBJS)
+	@echo ""
+	@echo "### LINKING" $@
+	@echo -n "    "
+	$(CC) $^ $(LFLAGS) -o $(TARGET)
+
+# compilation rule
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@echo ""
+	@echo "### COMPILING" $@
+	@echo -n "    "
+	$(CC) $(CFLAGS) -I include -c -o $@ $<
+
+# cleanup
 clean:
-	rm -f $(OBJ_NAME) *.o
+	@echo ""
+	@echo "### CLEANING"
+	@echo -n "    "
+	$(RM) -r $(BUILDDIR)/*.o
+	@echo -n "    "
+	$(RM) -r $(BUILDDIR)/SU/*.o
+	@echo -n "    "
+	$(RM) -r $(TARGET)
+
+# variable print for debug purposes
+debug-%:
+	@echo $* = $($*)
+
+.PHONY: clean
