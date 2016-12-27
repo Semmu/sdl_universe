@@ -1,7 +1,12 @@
 #ifndef SU_pixelmanip_h
 #define SU_pixelmanip_h
 
-#include <SDL/SDL.h>
+#if USING_SDL1
+    #include <SDL/SDL.h>
+#else
+    #include <SDL2/SDL.h>
+#endif
+
 #include "SU/SU_etc.h"
 
 void SDL_Surface_putpixel_nolock(SDL_Surface* s, int x, int y, int color);

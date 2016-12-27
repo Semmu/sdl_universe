@@ -7,7 +7,7 @@
 #include <vector>
 #include <numeric>
 
-#if 0
+#ifdef MAIN_FULLSCREEN
     #define WIDTH 1920
     #define HEIGHT 1080
 #else
@@ -453,6 +453,8 @@ std::vector<Uint32>::iterator current_render_time = render_times.begin();
 
 int main( int argc, char* args[] )
 {
+    srand(time(NULL));
+
     Uint32 currentSec = 0;
     Uint32 currentSecFPS = 0;
     Uint8 previousSecFPS = 0;
@@ -502,7 +504,7 @@ int main( int argc, char* args[] )
     SU::setFlag(SU::Flags::LIGHTING);
 
 
-    TTF_Font *font = TTF_OpenFont("./Dina_r400-10.bdf", 0);
+    TTF_Font *font = TTF_OpenFont("./cft.ttf", 16);
     if (font == NULL)
         DIE(TTF_GetError());
 
@@ -654,6 +656,7 @@ int main( int argc, char* args[] )
                 }
                 break;
 
+                #if USING_SDL1
                 case SDL_MOUSEBUTTONDOWN:
                 {
                     switch(e.button.button)
@@ -670,6 +673,21 @@ int main( int argc, char* args[] )
                     }
                 }
                 break;
+                #else
+                case SDL_MOUSEWHEEL:
+                {
+                    if (e.wheel.y > 0)
+                    {
+                        Camera.distance *= (0.9 * e.wheel.y);
+                    }
+                    else
+                    {
+                        Camera.distance /= (0.9 * abs(e.wheel.y));
+                    }
+
+                }
+                break;
+                #endif
 
                 default: break;
             }
