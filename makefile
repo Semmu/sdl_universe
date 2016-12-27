@@ -5,8 +5,8 @@
 # compiler
 CC := g++
 # compilation flags
-CFLAGS := -O -Wall -std=c++11 `sdl-config --cflags` -DUSING_SDL1
-LFLAGS := `sdl-config --libs` -lSDL_ttf
+CFLAGS := -O -Wall -std=c++11 $(EXTRAFLAGS)
+LFLAGS :=
 
 # source files
 SRCDIR := src
@@ -16,11 +16,34 @@ SRCS := $(wildcard $(SRCDIR)/*.$(SRCEXT)) $(wildcard $(SRCDIR)/SU/*.$(SRCEXT))
 # building
 BUILDDIR := build
 OBJS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SRCS:.$(SRCEXT)=.o))
+SDLVERSION := SDL
 
 # output
 OUTPUTDIR := bin
 TARGET := SDL_Universe
 
+
+
+#
+#	SDL1 version
+#
+
+sdl1: SDLVERSION += 1
+sdl1: CFLAGS += `sdl-config --cflags` -DUSING_SDL1
+sdl1: LFLAGS += `sdl-config --libs` -lSDL_ttf
+sdl1: run
+
+
+
+#
+#	SDL2 version
+#
+
+sdl2: SDLVERSION += 2
+sdl2: CFLAGS += `sdl2-config --cflags` -DUSING_SDL2
+sdl2: LFLAGS += `sdl2-config --libs` -lSDL2_ttf
+sdl2: clean
+sdl2: run
 
 
 
@@ -30,21 +53,21 @@ TARGET := SDL_Universe
 
 run: $(TARGET)
 	@echo ""
-	@echo "### RUNNING"
+	@echo "### RUNNING VERSION" $(SDLVERSION)
 	@echo -n "    "
 	./$(TARGET)
 
 # linking rule
 $(TARGET): $(OBJS)
 	@echo ""
-	@echo "### LINKING" $@
+	@echo "### LINKING" $@ "WITH" $(SDLVERSION)
 	@echo -n "    "
 	$(CC) $^ $(LFLAGS) -o $(TARGET)
 
 # compilation rule
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@echo ""
-	@echo "### COMPILING" $@
+	@echo "### COMPILING" $@ "FOR" $(SDLVERSION)
 	@echo -n "    "
 	$(CC) $(CFLAGS) -I include -c -o $@ $<
 
