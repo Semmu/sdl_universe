@@ -3,9 +3,7 @@
 # i dont know why is my computer full of these temp files
 .fuse_hidden*
 
-# the binary
-sdl_universe
-SDL_Universe
+# sublime text things
 *.sublime*
 
 ### C++ ###

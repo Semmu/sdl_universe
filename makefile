@@ -51,18 +51,18 @@ sdl2: run
 #	RULES
 #
 
-run: $(TARGET)
+run: $(OUTPUTDIR)/$(TARGET)
 	@echo ""
 	@echo "### RUNNING VERSION" $(SDLVERSION)
 	@echo -n "    "
-	./$(TARGET)
+	./$(OUTPUTDIR)/$(TARGET)
 
 # linking rule
-$(TARGET): $(OBJS)
+$(OUTPUTDIR)/$(TARGET): $(OBJS)
 	@echo ""
 	@echo "### LINKING" $@ "WITH" $(SDLVERSION)
 	@echo -n "    "
-	$(CC) $^ $(LFLAGS) -o $(TARGET)
+	$(CC) $^ $(LFLAGS) -o $(OUTPUTDIR)/$(TARGET)
 
 # compilation rule
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
@@ -80,7 +80,7 @@ clean:
 	@echo -n "    "
 	$(RM) -r $(BUILDDIR)/SU/*.o
 	@echo -n "    "
-	$(RM) -r $(TARGET)
+	$(RM) -r $(OUTPUTDIR)/$(TARGET)
 
 # variable print for debug purposes
 debug-%:
