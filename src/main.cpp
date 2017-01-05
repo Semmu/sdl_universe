@@ -34,7 +34,7 @@
     #endif
 #endif
 
-#include "SU/SU.h"
+#include "SDL_Universe/SU.h"
 
 void DIE(const char* reason)
 {

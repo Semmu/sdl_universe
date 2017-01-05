@@ -1,4 +1,4 @@
-#include "SU/SU_pixelmanip.h"
+#include "SDL_Universe/SU_pixelmanip.h"
 #include <utility>
 
 void SDL_Surface_putpixel_nolock(SDL_Surface* s, int x, int y, int color)

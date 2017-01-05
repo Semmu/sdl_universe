@@ -1,6 +1,6 @@
-#include "SU/SU.h"
-#include "SU/SU_math.h"
-#include "SU/SU_pixelmanip.h"
+#include "SDL_Universe/SU.h"
+#include "SDL_Universe/SU_math.h"
+#include "SDL_Universe/SU_pixelmanip.h"
 #include <iostream>
 #include <algorithm>
 

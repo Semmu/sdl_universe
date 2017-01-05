@@ -7,7 +7,7 @@
     #include <SDL2/SDL.h>
 #endif
 
-#include "SU/SU_etc.h"
+#include "SDL_Universe/SU_etc.h"
 
 void SDL_Surface_putpixel_nolock(SDL_Surface* s, int x, int y, int color);
 void SDL_Surface_putpixel_nolock(SDL_Surface* s, SDL_Point p, int c);

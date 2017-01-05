@@ -1,4 +1,4 @@
-#include "SU/SU_etc.h"
+#include "SDL_Universe/SU_etc.h"
 #include <cmath>
 #include <iostream>
 

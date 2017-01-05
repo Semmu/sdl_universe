@@ -2,6 +2,8 @@
 #	VARIABLES AND SETTINGS
 #
 
+LIBNAME = SDL_Universe
+
 # compiler
 CC := g++
 # compilation flags
@@ -11,7 +13,7 @@ LFLAGS :=
 # source files
 SRCDIR := src
 SRCEXT := cpp
-SRCS := $(wildcard $(SRCDIR)/*.$(SRCEXT)) $(wildcard $(SRCDIR)/SU/*.$(SRCEXT))
+SRCS := $(wildcard $(SRCDIR)/*.$(SRCEXT)) $(wildcard $(SRCDIR)/$(LIBNAME)/*.$(SRCEXT))
 
 # building
 BUILDDIR := build
@@ -20,7 +22,7 @@ SDLVERSION := SDL
 
 # output
 OUTPUTDIR := bin
-TARGET := SDL_Universe
+TARGET := $(LIBNAME)
 
 
 
@@ -78,7 +80,7 @@ clean:
 	@echo -n "    "
 	$(RM) -r $(BUILDDIR)/*.o
 	@echo -n "    "
-	$(RM) -r $(BUILDDIR)/SU/*.o
+	$(RM) -r $(BUILDDIR)/$(LIBNAME)/*.o
 	@echo -n "    "
 	$(RM) -r $(OUTPUTDIR)/$(TARGET)
 

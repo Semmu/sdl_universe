@@ -1,6 +1,6 @@
-#include "SU/SU_math.h"
-#include "SU/SU_primitives.h"
-#include "SU/SU.h"
+#include "SDL_Universe/SU_math.h"
+#include "SDL_Universe/SU_primitives.h"
+#include "SDL_Universe/SU.h"
 
 namespace SU
 {
