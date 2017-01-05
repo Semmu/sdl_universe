@@ -1,0 +1,76 @@
+#arrowsize: 3
+#spacing: 30
+#lineWidth: 2
+#edges: hard
+#font: Input
+#fontSize: 10
+
+[<abstract>Primitive ||
+    [TYPE]|
+    Color |
+    getType()   : TYPE
+    getColor()  : Color
+    getCenter() : Vector
+]
+
+[Point||
+    P1 : Vector
+]
+
+[Segment||
+    P1, P2 : Vector
+]
+
+[Triangle||
+    P1, P2, P3 : Vector
+    lighted    : bool|
+    flip()         : void
+    getDirection() : Vector
+]
+
+[Point]<--[Primitive]
+[Segment]<--[Primitive]
+[Triangle]<--[Primitive]
+
+[Mesh]+->[Point]
+[Mesh]+->[Segment]
+[Mesh]+->[Triangle]
+
+[Mesh||
+    add(Primitive*)|
+    [primitives : Primitive*\[\]]
+]
+
+[Object||
+    Position       : Vector
+    transforming   : bool
+    X, Y, Z        : Vector
+    |
+    mesh           : Mesh*
+    shaders        : Shader*\[\]
+    |
+    [children : Object\[\]]
+]
+
+[Object]-->[Mesh]
+
+
+[Scene||
+    objects : Object*\[\]
+    camera  : Camera
+    shaders : Shader*\[\]
+    |
+    [Light]
+    |
+    [Camera]
+]
+
+[Scene]+->[<abstract>Shader]
+[Scene]+->[Object]
+
+[SU|
+    scenes
+    flags
+]
+
+[SU]+->[Scene]
