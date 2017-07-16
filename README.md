@@ -15,7 +15,7 @@ This is purely a hobby project, I started it to learn and experience 3D programm
 Screenshots
 -----------
 
-[Here.](https://www.dropbox.com/sh/r695mruwek4bhr0/AAD5K_QT_9G54ikxEBSMwS2Pa?dl=0) Pay attention to the file names and the debug information on the screen.
+[In the screenshots folder with explanations.](https://github.com/Semmu/sdl_universe/tree/master/screenshots)
 
 
 
